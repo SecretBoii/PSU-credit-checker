@@ -1204,7 +1204,7 @@ const CategoryProgressList = ({ studentData, lang = 'th', onCategoryClick }) => 
 export default function App() {
   const [theme, setTheme] = useState('light');
   const [lang, setLang] = useState('th');
-  const [currentRoute, setCurrentRoute] = useState('/student');
+  const [currentRoute, setCurrentRoute] = useState('/login');
   const [currentRole, setCurrentRole] = useState('student');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { driver } from 'driver.js';
+import 'driver.js/dist/driver.css';
 import {
   GraduationCap,
   LayoutDashboard,
@@ -28,7 +30,8 @@ import {
   Menu,
   LogOut,
   ArrowLeft,
-  FileText
+  FileText,
+  Settings
 } from 'lucide-react';
 
 const CATEGORY_THEME = {
@@ -496,9 +499,9 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
               : 'Track your cumulative credits, verify curriculum completion across all categories, and plan your graduation with confidence.'}
           </p>
           <div className="flex flex-wrap gap-4 mt-6 pt-5 border-t border-white/20 text-xs lg:text-sm">
-            <span>✓ {lang === 'th' ? 'ตรวจสอบ 4 หมวดวิชา' : '4 Category Audit'}</span>
-            <span>✓ {lang === 'th' ? 'แผนจำลองการลงทะเบียน' : 'Plan Simulation'}</span>
-            <span>✓ {lang === 'th' ? 'รายงาน PDF รับรองเบื้องต้น' : 'Official PDF Export'}</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-cyan-300" /> {lang === 'th' ? 'ตรวจสอบ 4 หมวดวิชา' : '4 Category Audit'}</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-cyan-300" /> {lang === 'th' ? 'แผนจำลองการลงทะเบียน' : 'Plan Simulation'}</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-cyan-300" /> {lang === 'th' ? 'รายงาน PDF รับรองเบื้องต้น' : 'Official PDF Export'}</span>
           </div>
         </div>
       </div>
@@ -585,7 +588,40 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
             <span>{t.login365Btn}</span>
           </button>
 
-          <div className="mt-6 text-center">
+          {/* Quick Demo Role Switchers */}
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[#2C2E33]">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500 block text-center mb-2 font-medium">
+              {lang === 'th' ? '— หรือทดลองเข้าใช้งานทันทีด้วยบทบาทตัวอย่าง —' : '— Or explore immediately with demo roles —'}
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => onLogin('student')}
+                className="py-2.5 px-2 rounded-xl border border-slate-200 dark:border-[#2C2E33] hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all active:scale-95"
+              >
+                <GraduationCap size={14} className="text-blue-600 dark:text-blue-400" />
+                <span>{t.demoStudent}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onLogin('advisor')}
+                className="py-2.5 px-2 rounded-xl border border-slate-200 dark:border-[#2C2E33] hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all active:scale-95"
+              >
+                <Users size={14} className="text-purple-600 dark:text-purple-400" />
+                <span>{t.demoAdvisor}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onLogin('admin')}
+                className="py-2.5 px-2 rounded-xl border border-slate-200 dark:border-[#2C2E33] hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all active:scale-95"
+              >
+                <Settings size={14} className="text-amber-600 dark:text-amber-400" />
+                <span>{t.demoAdmin}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-5 text-center">
             <span
               onClick={() => onLogin('student')}
               className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 cursor-pointer inline-flex items-center gap-1 font-medium hover:underline"
@@ -1008,7 +1044,6 @@ export default function App() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
-  const [isTourOpen, setIsTourOpen] = useState(false);
   const [activeCategoryTab, setActiveCategoryTab] = useState('core-req');
   const [searchCatalogQuery, setSearchCatalogQuery] = useState('');
   const [selectedSubView, setSelectedSubView] = useState('all');
@@ -1098,17 +1133,222 @@ export default function App() {
     };
   }, [selectedStudentId]);
 
+  const startTour = useCallback(() => {
+    const isThai = lang === 'th';
+    let steps;
+
+    if (currentRoute === '/student') {
+      steps = [
+        {
+          element: '#tour-student-header',
+          popover: {
+            title: isThai ? 'ข้อมูลนักศึกษา & ผลการเรียน' : 'Student Profile & Academic Summary',
+            description: isThai
+              ? 'แสดงข้อมูลชื่อ-สกุล รหัสนักศึกษา หลักสูตร เกรดเฉลี่ยสะสม (GPA) อาจารย์ที่ปรึกษา และปุ่มส่งออกรายงาน PDF สำหรับใช้ยื่นคำร้อง'
+              : 'Displays student profile, curriculum, cumulative GPA, academic advisor, and official PDF export button.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-donut-progress',
+          popover: {
+            title: isThai ? 'ความคืบหน้ารวมตามหลักสูตร' : 'Overall Degree Progress',
+            description: isThai
+              ? 'แผนภูมิวงแหวนแสดงสัดส่วนหน่วยกิตสะสมที่ผ่านแล้ว พร้อมการคาดการณ์ภาคการศึกษาที่จะสำเร็จการศึกษาตามแผน'
+              : 'Interactive donut chart showing earned vs required credits and graduation timeline projection.',
+            side: 'right',
+            align: 'center'
+          }
+        },
+        {
+          element: '#tour-category-progress',
+          popover: {
+            title: isThai ? 'หน่วยกิตแยกตาม 4 หมวดวิชา' : 'Credits by 4 Categories',
+            description: isThai
+              ? 'ตรวจสอบหน่วยกิตในแต่ละหมวด (ศึกษาทั่วไป, เฉพาะบังคับ, เฉพาะเลือก, เลือกเสรี) คลิกที่การ์ดเพื่อดูรายวิชาที่ต้องเรียน'
+              : 'Detailed breakdown by 4 categories. Click any category card to drill down into specific course requirements.',
+            side: 'left',
+            align: 'center'
+          }
+        },
+        {
+          element: '#tour-current-enrollment',
+          popover: {
+            title: isThai ? 'รายวิชาที่ลงทะเบียนในภาคการศึกษาปัจจุบัน' : 'Current Term Enrollment',
+            description: isThai
+              ? 'รายการวิชาที่กำลังศึกษาในภาค 2/2569 จำนวนหน่วยกิต กลุ่มเรียน และสถานะการลงทะเบียน'
+              : 'View courses enrolled in Term 2/2026 along with credits, sections, and schedule.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/student/categories') {
+      steps = [
+        {
+          element: '#tour-search-catalog',
+          popover: {
+            title: isThai ? 'ค้นหาและกรองรายวิชา' : 'Search & Filter Courses',
+            description: isThai
+              ? 'ค้นหาตามรหัสวิชา ชื่อวิชา และสลับหมวดหมู่วิชา 4 หมวดได้อย่างสะดวกรวดเร็ว'
+              : 'Search courses by code, title, and instantly filter across 4 curriculum categories.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-catalog-grid',
+          popover: {
+            title: isThai ? 'รายวิชาที่เปิดรับและจำนวนที่นั่ง' : 'Available Course Catalog',
+            description: isThai
+              ? 'แสดงรายวิชาที่เปิดสอน ตารางเรียน ผู้สอน และแถบที่นั่งว่างแบบเรียลไทม์ คลิกเพื่อดูรายละเอียดวิชา'
+              : 'Explore open courses, schedules, instructors, and real-time seat availability meters.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/advisor/students') {
+      steps = [
+        {
+          element: '#tour-advisor-students',
+          popover: {
+            title: isThai ? 'รายชื่อนักศึกษาในความดูแล' : 'Advisees Management Directory',
+            description: isThai
+              ? 'ตรวจสอบสถานะความก้าวหน้าทางการศึกษาของนักศึกษา (ปกติ, เสี่ยง, ต้องติดตามด่วน) และเข้าดูรายละเอียดผลการเรียนรายบุคคล'
+              : 'Monitor advisees academic progress statuses (On-track, Warning, Critical) and drill into individual student profiles.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/admin/stats') {
+      steps = [
+        {
+          element: '#tour-admin-stats',
+          popover: {
+            title: isThai ? 'สถิติการใช้งานระบบภาพรวม' : 'System-wide Telemetry Analytics',
+            description: isThai
+              ? 'สถิติจำนวนผู้ใช้งาน การตรวจสอบหน่วยกิต และการส่งออกรายงาน PDF แยกตามวิทยาเขตและช่วงเวลา'
+              : 'Real-time telemetry of active users, audit checks, and PDF exports across 5 PSU campuses.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else {
+      steps = [
+        {
+          element: '#tour-navigation-menu',
+          popover: {
+            title: isThai ? 'เมนูนำทางหลัก' : 'Navigation Menu',
+            description: isThai
+              ? 'เข้าถึงฟังก์ชันต่างๆ ของระบบ PSU Credit Checker ได้อย่างสะดวกรวดเร็ว'
+              : 'Access all features and modules across student, advisor, and admin portals.',
+            side: 'right',
+            align: 'center'
+          }
+        }
+      ];
+    }
+
+    const driverObj = driver({
+      showProgress: true,
+      animate: true,
+      allowClose: true,
+      overlayOpacity: 0.7,
+      stagePadding: 8,
+      nextBtnText: isThai ? 'ถัดไป →' : 'Next →',
+      prevBtnText: isThai ? '← ย้อนกลับ' : '← Previous',
+      doneBtnText: isThai ? 'เสร็จสิ้น ✓' : 'Done ✓',
+      steps: steps
+    });
+
+    driverObj.drive();
+  }, [currentRoute, lang]);
+
+  const currentUserProfile = useMemo(() => {
+    if (currentRole === 'advisor') {
+      return {
+        name: lang === 'th' ? MOCK.advisor.name : MOCK.advisor.nameEn,
+        subtitle: lang === 'th' ? 'อาจารย์ที่ปรึกษา' : 'Academic Advisor',
+        roleBadge: t.roleAdvisor,
+        initials: lang === 'th' ? 'วท' : 'WT',
+        avatarBg: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40'
+      };
+    }
+    if (currentRole === 'admin') {
+      return {
+        name: lang === 'th' ? 'นายสมศักดิ์ แอดมิน' : 'Mr. Somsak Admin',
+        subtitle: 'somsak.admin@psu.ac.th',
+        roleBadge: t.roleAdmin,
+        initials: lang === 'th' ? 'สอ' : 'SA',
+        avatarBg: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40'
+      };
+    }
+    return {
+      name: lang === 'th' ? MOCK.student.name : MOCK.student.nameEn,
+      subtitle: MOCK.student.id,
+      roleBadge: t.roleStudent,
+      initials: lang === 'th' ? 'สช' : 'SJ',
+      avatarBg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40'
+    };
+  }, [currentRole, lang, t]);
+
+  const handleOpenCourseDetail = useCallback((course) => {
+    if (!course) return;
+    if (typeof course === 'object') {
+      const fullCourse = MOCK.catalog.find(c => c.code === course.code);
+      setSelectedCourseDetail(fullCourse || {
+        ...course,
+        seatsMax: course.seatsMax || 45,
+        seatsAvailable: course.seatsAvailable ?? 10,
+        instructor: course.instructor || (lang === 'th' ? 'อาจารย์ประจำสาขาวิชา' : 'Faculty Instructor'),
+        instructorEn: course.instructorEn || 'Faculty Instructor',
+        schedule: course.schedule || (lang === 'th' ? 'ตามประกาศภาควิชา' : 'TBA'),
+        scheduleEn: course.scheduleEn || 'TBA',
+        description: course.description || (lang === 'th' ? `รายวิชา ${course.code} ตามหลักสูตรวิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์` : `Course ${course.code} in Computer Science curriculum.`),
+        descriptionEn: course.descriptionEn || `Course ${course.code} in Computer Science curriculum.`,
+        prerequisite: course.prerequisite || '-'
+      });
+    } else if (typeof course === 'string') {
+      const found = MOCK.catalog.find(c => c.code === course);
+      if (found) {
+        setSelectedCourseDetail(found);
+      } else {
+        const inPassed = MOCK.student.passedCourses.find(c => c.code === course);
+        setSelectedCourseDetail({
+          code: course,
+          nameTh: inPassed ? inPassed.nameTh : course,
+          nameEn: inPassed ? inPassed.nameEn : course,
+          credits: inPassed ? inPassed.credits : 3,
+          category: inPassed ? inPassed.category : 'core-req',
+          seatsMax: 45,
+          seatsAvailable: 10,
+          instructor: lang === 'th' ? 'อาจารย์ประจำสาขาวิชา' : 'Faculty Instructor',
+          instructorEn: 'Faculty Instructor',
+          schedule: lang === 'th' ? 'ตามประกาศภาควิชา' : 'TBA',
+          scheduleEn: 'TBA',
+          description: lang === 'th' ? `รายวิชา ${course} ตามหลักสูตรวิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์` : `Course ${course} in Computer Science curriculum.`,
+          descriptionEn: `Course ${course} in Computer Science curriculum.`,
+          prerequisite: '-'
+        });
+      }
+    }
+  }, [lang]);
+
   const studentMenus = [
     { route: '/student', label: t.menuOverview, icon: LayoutDashboard },
     { route: '/student/categories', label: t.menuCategories, icon: List },
     { route: '/student/history', label: t.menuHistory, icon: HistoryIcon },
-    { route: '#tour', label: t.menuTour, icon: HelpCircle, action: () => setIsTourOpen(true) }
+    { route: '#tour', label: t.menuTour, icon: HelpCircle, action: () => startTour() }
   ];
 
   const advisorMenus = [
     { route: '/advisor/students', label: t.menuAdvisees, icon: Users },
     { route: '/advisor/department', label: t.menuDept, icon: BarChart3 },
-    { route: '#tour', label: t.menuTour, icon: HelpCircle, action: () => setIsTourOpen(true) }
+    { route: '#tour', label: t.menuTour, icon: HelpCircle, action: () => startTour() }
   ];
 
   const adminMenus = [
@@ -1159,9 +1399,11 @@ export default function App() {
       >
         <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200 dark:border-[#2C2E33]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-extrabold text-sm">
-              PSU
-            </div>
+            <img
+              src="/PSU-Logo-usual.png"
+              alt="PSU Logo"
+              className="h-8 w-auto object-contain dark:brightness-0 dark:invert"
+            />
             <div>
               <div className="text-sm font-bold text-blue-600 dark:text-blue-400">Credit Checker</div>
               <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7]">{t.universityName}</div>
@@ -1194,6 +1436,23 @@ export default function App() {
         </nav>
 
         <div className="p-3 border-t border-slate-200 dark:border-[#2C2E33]">
+          {/* User Profile Card */}
+          <div className="p-3 mb-2 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${currentUserProfile.avatarBg}`}>
+              {currentUserProfile.initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-xs font-bold text-slate-800 dark:text-white truncate">
+                  {currentUserProfile.name}
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] truncate">
+                {currentUserProfile.subtitle}
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={() => setCurrentRoute('/login')}
             className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-950/20"
@@ -1212,9 +1471,11 @@ export default function App() {
       >
         <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200 dark:border-[#2C2E33]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-base flex-shrink-0 shadow-sm">
-              PSU
-            </div>
+            <img
+              src="/PSU-Logo-usual.png"
+              alt="PSU Logo"
+              className="h-9 w-auto object-contain dark:brightness-0 dark:invert"
+            />
             {!isCollapsed && (
               <div className="overflow-hidden whitespace-nowrap">
                 <div className="text-sm font-bold text-blue-600 dark:text-blue-400">Credit Checker</div>
@@ -1249,6 +1510,29 @@ export default function App() {
         </nav>
 
         <div className="p-3 border-t border-slate-200 dark:border-[#2C2E33]">
+          {/* User Profile Card */}
+          {!isCollapsed ? (
+            <div className="p-2.5 mb-2.5 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${currentUserProfile.avatarBg}`}>
+                {currentUserProfile.initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-slate-800 dark:text-white truncate">
+                  {currentUserProfile.name}
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] truncate">
+                  {currentUserProfile.subtitle}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-center mb-2.5" title={`${currentUserProfile.name} (${currentUserProfile.subtitle})`}>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${currentUserProfile.avatarBg}`}>
+                {currentUserProfile.initials}
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => setCurrentRoute('/login')}
             className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-950/20 ${
@@ -1296,7 +1580,7 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setIsTourOpen(true)}
+              onClick={() => startTour()}
               className="w-9 h-9 rounded-full border border-slate-200 dark:border-[#2C2E33] bg-transparent text-slate-500 dark:text-[#A8B4C7] hover:text-slate-900 dark:hover:text-white flex items-center justify-center"
               title={t.menuTour}
             >
@@ -1319,7 +1603,7 @@ export default function App() {
           {currentRoute === '/student' && (
             <div className="flex flex-col gap-5 sm:gap-6">
               {/* Student Header Card */}
-              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div id="tour-student-header" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xl flex-shrink-0">
                     {lang === 'th' ? 'สช' : 'SJ'}
@@ -1354,7 +1638,7 @@ export default function App() {
 
               {/* Donut Chart & Category Progress Summary */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col items-center justify-between">
+                <div id="tour-donut-progress" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col items-center justify-between">
                   <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white self-start">
                     {t.overallProgress}
                   </h3>
@@ -1371,7 +1655,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
+                <div id="tour-category-progress" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
                   <CategoryProgressList
                     studentData={MOCK.student}
                     lang={lang}
@@ -1384,7 +1668,7 @@ export default function App() {
               </div>
 
               {/* Current Term Registered Courses */}
-              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
+              <div id="tour-current-enrollment" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
                 <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white mb-3">
                   {t.currentSemesterCourses}
                 </h3>
@@ -1402,7 +1686,11 @@ export default function App() {
                     </thead>
                     <tbody>
                       {MOCK.student.currentSemesterCourses.map(c => (
-                        <tr key={c.code} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
+                        <tr
+                          key={c.code}
+                          onClick={() => handleOpenCourseDetail(c)}
+                          className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
+                        >
                           <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
                           <td className="p-3 font-medium text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
                           <td className="p-3 tabular-nums">{c.credits}</td>
@@ -1516,7 +1804,7 @@ export default function App() {
                 })()}
 
                 {/* Filter and Search Controls */}
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+                <div id="tour-search-catalog" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-4 shadow-sm flex flex-col gap-3">
                   <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                     <div className="relative flex-1">
                       <input
@@ -1573,7 +1861,11 @@ export default function App() {
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                       {remainingInCat.map(rc => (
-                        <div key={rc.code} className="p-4 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] flex flex-col justify-between gap-3">
+                        <div
+                          key={rc.code}
+                          onClick={() => handleOpenCourseDetail(rc)}
+                          className="p-4 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] flex flex-col justify-between gap-3 cursor-pointer hover:border-blue-500 hover:shadow-sm transition-all"
+                        >
                           <div>
                             <div className="flex justify-between items-start gap-2">
                               <span className="tabular-nums font-bold text-blue-600 dark:text-blue-400 text-sm">{rc.code}</span>
@@ -1603,7 +1895,7 @@ export default function App() {
 
                 {/* Section 2: Open Courses with Dynamic Seat Meter */}
                 {(selectedSubView === 'all' || selectedSubView === 'catalog') && (
-                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
+                  <div id="tour-catalog-grid" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
                     <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                       <Search size={18} className="text-blue-600 dark:text-blue-400" />
                       {lang === 'th' ? 'ตารางรายวิชาที่เปิดสอนในระบบ' : 'Open Course Schedule & Seats'} ({filteredCatalog.length})
@@ -1699,14 +1991,18 @@ export default function App() {
                         </thead>
                         <tbody>
                           {passedInCat.map(c => (
-                            <tr key={c.code + c.term} className="border-b border-slate-100 dark:border-[#2C2E33]">
+                            <tr
+                              key={c.code + c.term}
+                              onClick={() => handleOpenCourseDetail(c)}
+                              className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
+                            >
                               <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
                               <td className="p-3 text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
                               <td className="p-3 tabular-nums">{c.credits}</td>
                               <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
                               <td className="p-3 tabular-nums">{c.term}</td>
                               <td className="p-3">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
+                                <span className="font-bold text-slate-900 dark:text-white tabular-nums text-sm">
                                   {c.grade}
                                 </span>
                               </td>
@@ -1838,14 +2134,18 @@ export default function App() {
                       </thead>
                       <tbody>
                         {filteredHistoryCourses.map(c => (
-                          <tr key={c.code + c.term} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
+                          <tr
+                            key={c.code + c.term}
+                            onClick={() => handleOpenCourseDetail(c)}
+                            className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
+                          >
                             <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
                             <td className="p-3 text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
                             <td className="p-3 tabular-nums">{c.credits}</td>
                             <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
                             <td className="p-3 tabular-nums font-semibold">{c.term}</td>
                             <td className="p-3">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
+                              <span className="font-bold text-slate-900 dark:text-white tabular-nums text-sm">
                                 {c.grade}
                               </span>
                             </td>
@@ -1861,7 +2161,7 @@ export default function App() {
 
           {/* VIEW: Advisor Advisees List */}
           {currentRoute === '/advisor/students' && (
-            <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
+            <div id="tour-advisor-students" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
               <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-4">{t.adviseesTitle}</h3>
               <div className="w-full overflow-x-auto">
                 <table className="w-full text-left border-collapse text-sm">
@@ -2258,7 +2558,7 @@ export default function App() {
           {currentRoute === '/admin/stats' && (() => {
             const periodData = MOCK.admin.statsByPeriod[statsPeriod];
             return (
-              <div className="flex flex-col gap-5">
+              <div id="tour-admin-stats" className="flex flex-col gap-5">
                 <div className="flex justify-between items-center flex-wrap gap-2">
                   <div className="flex gap-1 bg-slate-200 dark:bg-[#2A3038] p-1 rounded-xl">
                     {['daily', 'weekly', 'monthly', 'term', 'year'].map(p => (
@@ -2555,30 +2855,39 @@ export default function App() {
       </div>
 
       {/* Floating Demo Role Switcher */}
-      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-1 p-1 bg-white/90 dark:bg-[#191C24]/90 backdrop-blur-md rounded-full border border-slate-200 dark:border-[#2C2E33] shadow-lg">
+      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 p-1.5 bg-white/95 dark:bg-[#191C24]/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-[#2C2E33] shadow-lg">
         <button
           onClick={() => { setCurrentRole('student'); setCurrentRoute('/student'); }}
-          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-            currentRole === 'student' ? 'bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300'
+          className={`px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] shadow-sm flex items-center gap-1.5 transition-all text-xs ${
+            currentRole === 'student'
+              ? 'bg-blue-600 text-white font-bold border-blue-600 shadow-blue-500/20'
+              : 'bg-white dark:bg-[#191C24] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#2A3038]'
           }`}
         >
-          🎓 {t.roleStudent}
+          <GraduationCap size={14} />
+          <span>{t.roleStudent}</span>
         </button>
         <button
           onClick={() => { setCurrentRole('advisor'); setCurrentRoute('/advisor/students'); }}
-          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-            currentRole === 'advisor' ? 'bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300'
+          className={`px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] shadow-sm flex items-center gap-1.5 transition-all text-xs ${
+            currentRole === 'advisor'
+              ? 'bg-blue-600 text-white font-bold border-blue-600 shadow-blue-500/20'
+              : 'bg-white dark:bg-[#191C24] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#2A3038]'
           }`}
         >
-          🧑‍🏫 {t.roleAdvisor}
+          <Users size={14} />
+          <span>{t.roleAdvisor}</span>
         </button>
         <button
           onClick={() => { setCurrentRole('admin'); setCurrentRoute('/admin/stats'); }}
-          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-            currentRole === 'admin' ? 'bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300'
+          className={`px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] shadow-sm flex items-center gap-1.5 transition-all text-xs ${
+            currentRole === 'admin'
+              ? 'bg-blue-600 text-white font-bold border-blue-600 shadow-blue-500/20'
+              : 'bg-white dark:bg-[#191C24] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#2A3038]'
           }`}
         >
-          ⚙️ {t.roleAdmin}
+          <Settings size={14} />
+          <span>{t.roleAdmin}</span>
         </button>
       </div>
 
@@ -2770,52 +3079,35 @@ export default function App() {
         );
       })()}
 
-      {/* Guided Tour Modal */}
-      {isTourOpen && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#191C24] text-slate-900 dark:text-white max-w-sm w-full rounded-2xl p-5 border border-slate-200 dark:border-[#2C2E33] shadow-2xl">
-            <h3 className="text-base font-bold text-blue-600 dark:text-blue-400 mb-2">ยินดีต้อนรับสู่ PSU Credit Checker</h3>
-            <p className="text-xs text-slate-600 dark:text-[#A8B4C7] leading-relaxed mb-4">
-              ระบบช่วยตรวจสอบและคำนวณหน่วยกิตสะสมตามโครงสร้างหลักสูตร รองรับทั้งนักศึกษา อาจารย์ที่ปรึกษา และผู้ดูแลระบบแบบครบวงจร
-            </p>
-            <div className="flex justify-end">
-              <button onClick={() => setIsTourOpen(false)} className="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold">
-                เข้าใจแล้ว
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Course Detail Modal */}
       {selectedCourseDetail && (
         <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={() => setSelectedCourseDetail(null)}
         >
           <div
-            className="bg-white dark:bg-[#191C24] text-slate-900 dark:text-white max-w-md w-full rounded-2xl p-5 border border-slate-200 dark:border-[#2C2E33] shadow-2xl"
+            className="bg-white dark:bg-[#191C24] text-slate-900 dark:text-white max-w-2xl w-full rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-[#2C2E33] shadow-2xl transition-all"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#2C2E33] pb-3 mb-3">
+            <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#2C2E33] pb-4 mb-4">
               <div>
-                <span className="tabular-nums text-sm font-bold text-blue-600">{selectedCourseDetail.code} ({selectedCourseDetail.credits} {t.credits})</span>
-                <h4 className="text-base font-bold mt-0.5">{lang === 'th' ? selectedCourseDetail.nameTh : selectedCourseDetail.nameEn}</h4>
+                <span className="tabular-nums text-sm font-bold text-blue-600 dark:text-blue-400">{selectedCourseDetail.code} ({selectedCourseDetail.credits} {t.credits})</span>
+                <h4 className="text-lg sm:text-xl font-bold mt-1 text-black dark:text-white">{lang === 'th' ? selectedCourseDetail.nameTh : selectedCourseDetail.nameEn}</h4>
               </div>
-              <button onClick={() => setSelectedCourseDetail(null)} className="p-1 text-slate-400 hover:text-slate-600">
-                <X size={18} />
+              <button onClick={() => setSelectedCourseDetail(null)} className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#2A3038] text-slate-400 hover:text-slate-600 dark:hover:text-white transition-all">
+                <X size={20} />
               </button>
             </div>
-            <div className="text-xs space-y-2 text-slate-600 dark:text-slate-300 py-2">
-              <div><strong>{lang === 'th' ? 'คำอธิบาย:' : 'Description:'}</strong> {lang === 'th' ? selectedCourseDetail.description : selectedCourseDetail.descriptionEn}</div>
-              <div><strong>{lang === 'th' ? 'วิชาบังคับก่อน:' : 'Prerequisites:'}</strong> {selectedCourseDetail.prerequisite}</div>
-              <div><strong>{lang === 'th' ? 'ตารางเรียน:' : 'Schedule:'}</strong> {lang === 'th' ? selectedCourseDetail.schedule : selectedCourseDetail.scheduleEn}</div>
-              <div><strong>{lang === 'th' ? 'ผู้สอน:' : 'Instructor:'}</strong> {lang === 'th' ? selectedCourseDetail.instructor : selectedCourseDetail.instructorEn}</div>
+            <div className="text-sm space-y-3 text-slate-700 dark:text-slate-200 py-2">
+              <div><strong className="text-black dark:text-white">{lang === 'th' ? 'คำอธิบาย:' : 'Description:'}</strong> <span className="text-black dark:text-slate-200">{lang === 'th' ? selectedCourseDetail.description : selectedCourseDetail.descriptionEn}</span></div>
+              <div><strong className="text-black dark:text-white">{lang === 'th' ? 'วิชาบังคับก่อน:' : 'Prerequisites:'}</strong> <span className="text-black dark:text-slate-200">{selectedCourseDetail.prerequisite}</span></div>
+              <div><strong className="text-black dark:text-white">{lang === 'th' ? 'ตารางเรียน:' : 'Schedule:'}</strong> <span className="text-black dark:text-slate-200">{lang === 'th' ? selectedCourseDetail.schedule : selectedCourseDetail.scheduleEn}</span></div>
+              <div><strong className="text-black dark:text-white">{lang === 'th' ? 'ผู้สอน:' : 'Instructor:'}</strong> <span className="text-black dark:text-slate-200">{lang === 'th' ? selectedCourseDetail.instructor : selectedCourseDetail.instructorEn}</span></div>
 
               {/* Dynamic Seat Availability Meter */}
-              <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[#2C2E33]">
-                <div className="flex justify-between items-center text-sm sm:text-base font-extrabold mb-1.5">
-                  <span className="text-slate-700 dark:text-slate-200">
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-[#2C2E33]">
+                <div className="flex justify-between items-center text-sm sm:text-base font-extrabold mb-2">
+                  <span className="text-slate-900 dark:text-slate-100">
                     {lang === 'th' ? 'จำนวนที่นั่ง:' : 'Seat Availability:'}
                   </span>
                   <span className={`tabular-nums ${
@@ -2845,8 +3137,8 @@ export default function App() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end pt-3 border-t border-slate-200 dark:border-[#2C2E33]">
-              <button onClick={() => setSelectedCourseDetail(null)} className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold">
+            <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-[#2C2E33]">
+              <button onClick={() => setSelectedCourseDetail(null)} className="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#2A3038] dark:hover:bg-[#343b45] text-slate-800 dark:text-white text-xs sm:text-sm font-semibold transition-all">
                 {t.closeBtn}
               </button>
             </div>

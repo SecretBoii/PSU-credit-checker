@@ -598,8 +598,8 @@ const PaginationControl = ({ currentPage, totalItems, pageSize = 20, onPageChang
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 px-1 border-t border-slate-200/80 dark:border-[#2C2E33] text-xs">
       <div className="text-slate-500 dark:text-[#A8B4C7] font-medium">
         {lang === 'th'
-          ? `แสดง ${startIndex}-${endIndex} จากทั้งหมด ${totalItems} รายการ (หน้า ${currentPage}/${totalPages} • 20 รายการ/หน้า)`
-          : `Showing ${startIndex}-${endIndex} of ${totalItems} entries (Page ${currentPage}/${totalPages} • 20 items/page)`}
+          ? `แสดง ${startIndex}-${endIndex} จากทั้งหมด ${totalItems} รายการ (หน้า ${currentPage}/${totalPages} • ${pageSize} รายการ/หน้า)`
+          : `Showing ${startIndex}-${endIndex} of ${totalItems} entries (Page ${currentPage}/${totalPages} • ${pageSize} items/page)`}
       </div>
 
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -1215,6 +1215,7 @@ export default function App() {
   const [searchCatalogQuery, setSearchCatalogQuery] = useState('');
   const [selectedSubView, setSelectedSubView] = useState('all');
   const [onlyNotTaken, setOnlyNotTaken] = useState(false);
+  const [passedCatCurrentPage, setPassedCatCurrentPage] = useState(1);
   const [selectedCourseDetail, setSelectedCourseDetail] = useState(null);
   const [hoveredSegment, setHoveredSegment] = useState(null);
   const [statsPeriod, setStatsPeriod] = useState('daily');
@@ -1920,7 +1921,10 @@ export default function App() {
                 {/* Category Navigation Tabs */}
                 <div className="flex gap-2 border-b border-slate-200 dark:border-[#2C2E33] overflow-x-auto pb-1">
                   <button
-                    onClick={() => setActiveCategoryTab('all-cats')}
+                    onClick={() => {
+                      setActiveCategoryTab('all-cats');
+                      setPassedCatCurrentPage(1);
+                    }}
                     className={`py-2 px-4 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all border-b-2 ${
                       activeCategoryTab === 'all-cats'
                         ? 'border-blue-600 text-blue-600 dark:text-blue-400'
@@ -1935,7 +1939,10 @@ export default function App() {
                     return (
                       <button
                         key={cat.id}
-                        onClick={() => setActiveCategoryTab(cat.id)}
+                        onClick={() => {
+                          setActiveCategoryTab(cat.id);
+                          setPassedCatCurrentPage(1);
+                        }}
                         style={{
                           borderColor: isActive ? theme.color : 'transparent',
                           color: isActive ? theme.color : undefined
@@ -1999,7 +2006,10 @@ export default function App() {
                         type="text"
                         placeholder={t.searchPlaceholder}
                         value={searchCatalogQuery}
-                        onChange={(e) => setSearchCatalogQuery(e.target.value)}
+                        onChange={(e) => {
+                          setSearchCatalogQuery(e.target.value);
+                          setPassedCatCurrentPage(1);
+                        }}
                         className="w-full py-2.5 pl-9 pr-4 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <Search size={16} className="absolute left-3 top-3 text-slate-400" />
@@ -2008,7 +2018,10 @@ export default function App() {
                       <input
                         type="checkbox"
                         checked={onlyNotTaken}
-                        onChange={(e) => setOnlyNotTaken(e.target.checked)}
+                        onChange={(e) => {
+                          setOnlyNotTaken(e.target.checked);
+                          setPassedCatCurrentPage(1);
+                        }}
                         className="w-4 h-4 rounded text-blue-600 accent-blue-600"
                       />
                       <span>{lang === 'th' ? 'เฉพาะวิชาที่ยังไม่เคยลง' : 'Only not taken'}</span>
@@ -2027,7 +2040,10 @@ export default function App() {
                     ].map(pill => (
                       <button
                         key={pill.id}
-                        onClick={() => setSelectedSubView(pill.id)}
+                        onClick={() => {
+                          setSelectedSubView(pill.id);
+                          setPassedCatCurrentPage(1);
+                        }}
                         className={`py-1 px-3 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
                           selectedSubView === pill.id
                             ? 'bg-blue-600 text-white border-blue-600'
@@ -2173,48 +2189,85 @@ export default function App() {
                 )}
 
                 {/* Section 3: Passed Courses */}
-                {(selectedSubView === 'all' || selectedSubView === 'passed') && (
-                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-                    <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                      <CheckCircle2 size={18} className="text-emerald-500" />
-                      {lang === 'th' ? 'รายวิชาที่ผ่านแล้วในหมวดนี้' : 'Passed Courses in this Category'} ({passedInCat.length})
-                    </h4>
-                    <div className="w-full overflow-x-auto">
-                      <table className="w-full text-left border-collapse text-sm">
-                        <thead>
-                          <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                            <th className="p-3">{t.courseCode}</th>
-                            <th className="p-3">{t.courseName}</th>
-                            <th className="p-3">{t.credits}</th>
-                            <th className="p-3">{t.category}</th>
-                            <th className="p-3">{t.term}</th>
-                            <th className="p-3">{t.grade}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {passedInCat.map(c => (
-                            <tr
-                              key={c.code + c.term}
-                              onClick={() => handleOpenCourseDetail(c)}
-                              className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
-                            >
-                              <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
-                              <td className="p-3 text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
-                              <td className="p-3 tabular-nums">{c.credits}</td>
-                              <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
-                              <td className="p-3 tabular-nums">{c.term}</td>
-                              <td className="p-3">
-                                <span className="font-bold text-slate-900 dark:text-white tabular-nums text-sm">
-                                  {c.grade}
-                                </span>
-                              </td>
+                {(selectedSubView === 'all' || selectedSubView === 'passed') && (() => {
+                  const filteredPassed = passedInCat.filter(c => {
+                    if (!searchCatalogQuery.trim()) return true;
+                    const q = searchCatalogQuery.toLowerCase();
+                    return (
+                      c.code.toLowerCase().includes(q) ||
+                      c.nameTh.toLowerCase().includes(q) ||
+                      c.nameEn.toLowerCase().includes(q)
+                    );
+                  });
+
+                  const pageSize = 10;
+                  const totalPages = Math.ceil(filteredPassed.length / pageSize) || 1;
+                  const validPage = Math.min(passedCatCurrentPage, totalPages);
+                  const pagedPassed = filteredPassed.slice((validPage - 1) * pageSize, validPage * pageSize);
+
+                  return (
+                    <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                      <div className="flex justify-between items-center flex-wrap gap-2">
+                        <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          <CheckCircle2 size={18} className="text-emerald-500" />
+                          {lang === 'th' ? 'รายวิชาที่ผ่านแล้วในหมวดนี้' : 'Passed Courses in this Category'} ({filteredPassed.length})
+                        </h4>
+                      </div>
+
+                      <div className="w-full overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-sm">
+                          <thead>
+                            <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                              <th className="p-3">{t.courseCode}</th>
+                              <th className="p-3">{t.courseName}</th>
+                              <th className="p-3">{t.credits}</th>
+                              <th className="p-3">{t.category}</th>
+                              <th className="p-3">{t.term}</th>
+                              <th className="p-3">{t.grade}</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {pagedPassed.length === 0 ? (
+                              <tr>
+                                <td colSpan={6} className="p-8 text-center text-xs text-slate-500 dark:text-[#A8B4C7]">
+                                  {lang === 'th' ? 'ไม่พบข้อมูลรายวิชาที่ผ่านแล้ว' : 'No passed courses found.'}
+                                </td>
+                              </tr>
+                            ) : (
+                              pagedPassed.map(c => (
+                                <tr
+                                  key={c.code + c.term}
+                                  onClick={() => handleOpenCourseDetail(c)}
+                                  className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
+                                >
+                                  <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
+                                  <td className="p-3 text-slate-800 dark:text-white font-medium">{lang === 'th' ? c.nameTh : c.nameEn}</td>
+                                  <td className="p-3 tabular-nums font-semibold">{c.credits}</td>
+                                  <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
+                                  <td className="p-3 tabular-nums font-semibold">{c.term}</td>
+                                  <td className="p-3">
+                                    <span className="font-bold text-slate-900 dark:text-white tabular-nums text-sm">
+                                      {c.grade}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Pagination Control */}
+                      <PaginationControl
+                        currentPage={validPage}
+                        totalItems={filteredPassed.length}
+                        pageSize={pageSize}
+                        onPageChange={setPassedCatCurrentPage}
+                        lang={lang}
+                      />
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             );
           })()}

@@ -33,7 +33,9 @@ import {
   ArrowLeft,
   FileText,
   Building2,
-  Settings
+  Settings,
+  Clock,
+  Bookmark
 } from 'lucide-react';
 
 const CATEGORY_THEME = {
@@ -1480,44 +1482,37 @@ export default function App() {
 
   const handleOpenCourseDetail = useCallback((course) => {
     if (!course) return;
-    if (typeof course === 'object') {
-      const fullCourse = MOCK.catalog.find(c => c.code === course.code);
-      setSelectedCourseDetail(fullCourse || {
-        ...course,
-        seatsMax: course.seatsMax || 45,
-        seatsAvailable: course.seatsAvailable ?? 10,
-        instructor: course.instructor || (lang === 'th' ? 'อาจารย์ประจำสาขาวิชา' : 'Faculty Instructor'),
-        instructorEn: course.instructorEn || 'Faculty Instructor',
-        schedule: course.schedule || (lang === 'th' ? 'ตามประกาศภาควิชา' : 'TBA'),
-        scheduleEn: course.scheduleEn || 'TBA',
-        description: course.description || (lang === 'th' ? `รายวิชา ${course.code} ตามหลักสูตรวิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์` : `Course ${course.code} in Computer Science curriculum.`),
-        descriptionEn: course.descriptionEn || `Course ${course.code} in Computer Science curriculum.`,
-        prerequisite: course.prerequisite || '-'
-      });
-    } else if (typeof course === 'string') {
-      const found = MOCK.catalog.find(c => c.code === course);
-      if (found) {
-        setSelectedCourseDetail(found);
-      } else {
-        const inPassed = MOCK.student.passedCourses.find(c => c.code === course);
-        setSelectedCourseDetail({
-          code: course,
-          nameTh: inPassed ? inPassed.nameTh : course,
-          nameEn: inPassed ? inPassed.nameEn : course,
-          credits: inPassed ? inPassed.credits : 3,
-          category: inPassed ? inPassed.category : 'core-req',
-          seatsMax: 45,
-          seatsAvailable: 10,
-          instructor: lang === 'th' ? 'อาจารย์ประจำสาขาวิชา' : 'Faculty Instructor',
-          instructorEn: 'Faculty Instructor',
-          schedule: lang === 'th' ? 'ตามประกาศภาควิชา' : 'TBA',
-          scheduleEn: 'TBA',
-          description: lang === 'th' ? `รายวิชา ${course} ตามหลักสูตรวิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์` : `Course ${course} in Computer Science curriculum.`,
-          descriptionEn: `Course ${course} in Computer Science curriculum.`,
-          prerequisite: '-'
-        });
-      }
-    }
+    const code = typeof course === 'string' ? course : course.code;
+
+    const foundInCatalog = MOCK.availableCatalog.find(c => c.code === code);
+    const foundInRemaining = MOCK.student.remainingCourses.find(c => c.code === code);
+    const foundInPassed = MOCK.student.passedCourses.find(c => c.code === code);
+    const foundInCurrent = MOCK.student.currentSemesterCourses.find(c => c.code === code);
+
+    const merged = {
+      ...(typeof course === 'object' ? course : {}),
+      ...(foundInPassed || {}),
+      ...(foundInCurrent || {}),
+      ...(foundInRemaining || {}),
+      ...(foundInCatalog || {})
+    };
+
+    setSelectedCourseDetail({
+      code: code,
+      nameTh: merged.nameTh || code,
+      nameEn: merged.nameEn || code,
+      credits: merged.credits || 3,
+      category: merged.category || 'core-req',
+      seatsMax: merged.seatsMax || 60,
+      seatsAvailable: merged.seatsAvailable !== undefined ? merged.seatsAvailable : 12,
+      instructor: merged.instructor || (lang === 'th' ? 'อาจารย์ประจำภาควิชาวิทยาการคอมพิวเตอร์' : 'Computer Science Faculty Staff'),
+      instructorEn: merged.instructorEn || 'Computer Science Faculty Staff',
+      schedule: merged.schedule || (lang === 'th' ? 'ตามประกาศตารางเรียนภาควิชา' : 'To be announced by Department'),
+      scheduleEn: merged.scheduleEn || 'To be announced by Department',
+      description: merged.description || (lang === 'th' ? `ศึกษาและฝึกปฏิบัติการในรายวิชา ${code} ตามโครงสร้างหลักสูตรวิทยาศาสตรบัณฑิต มหาวิทยาลัยสงขลานครินทร์` : `Course study and laboratory practices for ${code} in Bachelor of Science program, Prince of Songkla University.`),
+      descriptionEn: merged.descriptionEn || `Course study and laboratory practices for ${code} in Bachelor of Science program, Prince of Songkla University.`,
+      prerequisite: merged.prerequisite || (merged.prereq ? merged.prereq : '-')
+    });
   }, [lang]);
 
   const studentMenus = [
@@ -2057,28 +2052,42 @@ export default function App() {
                         <div
                           key={rc.code}
                           onClick={() => handleOpenCourseDetail(rc)}
-                          className="p-4 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] flex flex-col justify-between gap-3 cursor-pointer hover:border-blue-500 hover:shadow-sm transition-all"
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleOpenCourseDetail(rc); }}
+                          className="group p-4 rounded-2xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] hover:bg-white dark:hover:bg-[#222736] flex flex-col justify-between gap-3 cursor-pointer hover:border-blue-500 hover:shadow-md hover:ring-2 hover:ring-blue-500/20 active:scale-[0.98] transition-all"
                         >
                           <div>
                             <div className="flex justify-between items-start gap-2">
-                              <span className="tabular-nums font-bold text-blue-600 dark:text-blue-400 text-sm">{rc.code}</span>
+                              <span className="tabular-nums font-bold text-blue-600 dark:text-blue-400 text-sm group-hover:underline flex items-center gap-1">
+                                {rc.code}
+                              </span>
                               <CategoryBadge categoryId={rc.category} lang={lang} />
                             </div>
-                            <div className="font-semibold text-xs sm:text-sm mt-1 text-slate-800 dark:text-white">{lang === 'th' ? rc.nameTh : rc.nameEn}</div>
-                            <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] mt-1">
-                              {lang === 'th' ? 'วิชาบังคับก่อน' : 'Prerequisite'}: <strong>{rc.prerequisite}</strong>
+                            <div className="font-semibold text-xs sm:text-sm mt-1.5 text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              {lang === 'th' ? rc.nameTh : rc.nameEn}
+                            </div>
+                            <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] mt-1.5 flex items-center gap-1">
+                              <span>{lang === 'th' ? 'วิชาบังคับก่อน:' : 'Prerequisite:'}</span>
+                              <strong className="text-slate-700 dark:text-slate-300 font-medium">{rc.prerequisite}</strong>
                             </div>
                           </div>
-                          <div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-200/70 dark:border-[#323846]">
                             {rc.availableNextTerm ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 {lang === 'th' ? 'เปิดสอนภาค 2/2569' : 'Open 2/2026'}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-500">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200/70 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                                 {lang === 'th' ? 'ยังไม่เปิดสอน' : 'Not open'}
                               </span>
                             )}
+                            <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium flex items-center gap-0.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                              <span>{lang === 'th' ? 'ดูรายละเอียด' : 'View'}</span>
+                              <ChevronRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -3460,71 +3469,174 @@ export default function App() {
       })()}
 
       {/* Course Detail Modal */}
-      {selectedCourseDetail && (
-        <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-          onClick={() => setSelectedCourseDetail(null)}
-        >
+      {selectedCourseDetail && (() => {
+        const enrolled = selectedCourseDetail.seatsMax - selectedCourseDetail.seatsAvailable;
+        const total = selectedCourseDetail.seatsMax;
+        const percent = Math.min(100, Math.round((enrolled / total) * 100));
+        const isFull = selectedCourseDetail.seatsAvailable === 0;
+        const isNearlyFull = !isFull && selectedCourseDetail.seatsAvailable / total <= 0.15;
+        const barColor = isFull ? '#DC2626' : isNearlyFull ? '#D97706' : '#2563EB';
+
+        return (
           <div
-            className="bg-white dark:bg-[#191C24] text-slate-900 dark:text-white max-w-2xl w-full rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-[#2C2E33] shadow-2xl transition-all"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setSelectedCourseDetail(null)}
           >
-            <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#2C2E33] pb-4 mb-4">
-              <div>
-                <span className="tabular-nums text-sm font-bold text-blue-600 dark:text-blue-400">{selectedCourseDetail.code} ({selectedCourseDetail.credits} {t.credits})</span>
-                <h4 className="text-lg sm:text-xl font-bold mt-1 text-black dark:text-white">{lang === 'th' ? selectedCourseDetail.nameTh : selectedCourseDetail.nameEn}</h4>
+            <div
+              className="bg-white dark:bg-[#191C24] text-slate-900 dark:text-white max-w-2xl w-full rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-[#2C2E33] shadow-2xl transition-all flex flex-col gap-4 sm:gap-5 max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-start border-b border-slate-100 dark:border-[#2C2E33] pb-4">
+                <div className="flex flex-col gap-1.5 pr-4">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="tabular-nums px-2.5 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold text-xs">
+                      {selectedCourseDetail.code}
+                    </span>
+                    <CategoryBadge categoryId={selectedCourseDetail.category} lang={lang} />
+                    <span className="tabular-nums px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-[#2A3038] text-slate-600 dark:text-slate-300 font-semibold text-xs">
+                      {selectedCourseDetail.credits} {lang === 'th' ? 'หน่วยกิต' : 'Credits'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1">
+                    {lang === 'th' ? selectedCourseDetail.nameTh : selectedCourseDetail.nameEn}
+                  </h3>
+                  <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-[#A8B4C7]">
+                    {lang === 'th' ? selectedCourseDetail.nameEn : selectedCourseDetail.nameTh}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setSelectedCourseDetail(null)}
+                  className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#2A3038] text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all flex-shrink-0"
+                  title={t.closeBtn}
+                >
+                  <X size={20} />
+                </button>
               </div>
-              <button onClick={() => setSelectedCourseDetail(null)} className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#2A3038] text-slate-400 hover:text-slate-600 dark:hover:text-white transition-all">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="text-sm space-y-3 text-slate-700 dark:text-slate-200 py-2">
-              <div><strong className="text-black dark:text-white">{lang === 'th' ? 'คำอธิบาย:' : 'Description:'}</strong> <span className="text-black dark:text-slate-200">{lang === 'th' ? selectedCourseDetail.description : selectedCourseDetail.descriptionEn}</span></div>
-              <div><strong className="text-black dark:text-white">{lang === 'th' ? 'วิชาบังคับก่อน:' : 'Prerequisites:'}</strong> <span className="text-black dark:text-slate-200">{selectedCourseDetail.prerequisite}</span></div>
-              <div><strong className="text-black dark:text-white">{lang === 'th' ? 'ตารางเรียน:' : 'Schedule:'}</strong> <span className="text-black dark:text-slate-200">{lang === 'th' ? selectedCourseDetail.schedule : selectedCourseDetail.scheduleEn}</span></div>
-              <div><strong className="text-black dark:text-white">{lang === 'th' ? 'ผู้สอน:' : 'Instructor:'}</strong> <span className="text-black dark:text-slate-200">{lang === 'th' ? selectedCourseDetail.instructor : selectedCourseDetail.instructorEn}</span></div>
+
+              {/* Course Description */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
+                  <BookOpen size={14} />
+                  <span>{lang === 'th' ? 'คำอธิบายรายวิชา' : 'Course Description'}</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
+                  {lang === 'th' ? selectedCourseDetail.description : selectedCourseDetail.descriptionEn}
+                </p>
+              </div>
+
+              {/* 2x2 Info Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Prerequisites */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#A8B4C7]">
+                    <FileText size={14} className="text-amber-500" />
+                    <span>{lang === 'th' ? 'วิชาบังคับก่อน' : 'Prerequisite'}</span>
+                  </div>
+                  <div className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">
+                    {selectedCourseDetail.prerequisite && selectedCourseDetail.prerequisite !== '-' ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold">
+                        {selectedCourseDetail.prerequisite}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 font-normal">{lang === 'th' ? 'ไม่มีวิชาบังคับก่อน' : 'None'}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Instructor */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#A8B4C7]">
+                    <User size={14} className="text-indigo-500" />
+                    <span>{lang === 'th' ? 'อาจารย์ผู้สอน' : 'Instructor'}</span>
+                  </div>
+                  <div className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                    {lang === 'th' ? selectedCourseDetail.instructor : selectedCourseDetail.instructorEn}
+                  </div>
+                </div>
+
+                {/* Schedule & Room */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#A8B4C7]">
+                    <Clock size={14} className="text-emerald-500" />
+                    <span>{lang === 'th' ? 'ตารางเรียนและห้องเรียน' : 'Schedule & Room'}</span>
+                  </div>
+                  <div className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">
+                    {lang === 'th' ? selectedCourseDetail.schedule : selectedCourseDetail.scheduleEn}
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#A8B4C7]">
+                    <Bookmark size={14} className="text-purple-500" />
+                    <span>{lang === 'th' ? 'หมวดวิชาหลักสูตร' : 'Curriculum Category'}</span>
+                  </div>
+                  <div className="pt-0.5">
+                    <CategoryBadge categoryId={selectedCourseDetail.category} lang={lang} />
+                  </div>
+                </div>
+              </div>
 
               {/* Dynamic Seat Availability Meter */}
-              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-[#2C2E33]">
-                <div className="flex justify-between items-center text-sm sm:text-base font-extrabold mb-2">
-                  <span className="text-slate-900 dark:text-slate-100">
-                    {lang === 'th' ? 'จำนวนที่นั่ง:' : 'Seat Availability:'}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-2.5">
+                <div className="flex justify-between items-center flex-wrap gap-2 text-xs sm:text-sm font-bold">
+                  <span className="text-slate-800 dark:text-white flex items-center gap-1.5">
+                    <Users size={15} className="text-blue-500" />
+                    <span>{lang === 'th' ? 'จำนวนที่นั่งและการลงทะเบียน' : 'Seat Capacity & Enrollment'}</span>
                   </span>
-                  <span className={`tabular-nums ${
-                    selectedCourseDetail.seatsAvailable === 0
-                      ? 'text-red-600'
-                      : selectedCourseDetail.seatsAvailable / selectedCourseDetail.seatsMax <= 0.15
-                      ? 'text-amber-600'
-                      : 'text-blue-600 dark:text-blue-400'
-                  }`}>
-                    {selectedCourseDetail.seatsAvailable === 0
-                      ? (lang === 'th' ? `ลงแล้ว ${selectedCourseDetail.seatsMax}/${selectedCourseDetail.seatsMax} คน (เต็ม)` : `Enrolled ${selectedCourseDetail.seatsMax}/${selectedCourseDetail.seatsMax} (Full)`)
-                      : (lang === 'th' ? `ลงแล้ว ${selectedCourseDetail.seatsMax - selectedCourseDetail.seatsAvailable}/${selectedCourseDetail.seatsMax} คน` : `Enrolled ${selectedCourseDetail.seatsMax - selectedCourseDetail.seatsAvailable}/${selectedCourseDetail.seatsMax}`)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="tabular-nums font-extrabold text-slate-900 dark:text-white">
+                      {lang === 'th'
+                        ? `ลงแล้ว ${enrolled}/${total} คน`
+                        : `Enrolled ${enrolled}/${total}`}
+                    </span>
+                    {isFull ? (
+                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400">
+                        {lang === 'th' ? 'เต็ม' : 'Full'}
+                      </span>
+                    ) : isNearlyFull ? (
+                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                        {lang === 'th' ? `เหลือ ${selectedCourseDetail.seatsAvailable} ที่` : `${selectedCourseDetail.seatsAvailable} left`}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+                        {lang === 'th' ? `ว่าง ${selectedCourseDetail.seatsAvailable} ที่` : `${selectedCourseDetail.seatsAvailable} seats`}
+                      </span>
+                    )}
+                  </div>
                 </div>
+
                 <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div
                     style={{
-                      width: `${Math.min(100, Math.round(((selectedCourseDetail.seatsMax - selectedCourseDetail.seatsAvailable) / selectedCourseDetail.seatsMax) * 100))}%`,
-                      backgroundColor: selectedCourseDetail.seatsAvailable === 0
-                        ? '#DC2626'
-                        : selectedCourseDetail.seatsAvailable / selectedCourseDetail.seatsMax <= 0.15
-                        ? '#D97706'
-                        : '#2563EB'
+                      width: `${percent}%`,
+                      backgroundColor: barColor
                     }}
                     className="h-full rounded-full transition-all duration-300"
                   />
                 </div>
+
+                <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-[#A8B4C7] tabular-nums font-medium">
+                  <span>{lang === 'th' ? `สัดส่วนการจองที่นั่ง: ${percent}%` : `Enrollment Rate: ${percent}%`}</span>
+                  <span>{lang === 'th' ? `รองรับสูงสุด ${total} ที่นั่ง` : `Max Capacity: ${total} seats`}</span>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex justify-end items-center pt-2 border-t border-slate-100 dark:border-[#2C2E33]">
+                <button
+                  onClick={() => setSelectedCourseDetail(null)}
+                  className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  <span>{t.closeBtn}</span>
+                </button>
               </div>
             </div>
-            <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-[#2C2E33]">
-              <button onClick={() => setSelectedCourseDetail(null)} className="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#2A3038] dark:hover:bg-[#343b45] text-slate-800 dark:text-white text-xs sm:text-sm font-semibold transition-all">
-                {t.closeBtn}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

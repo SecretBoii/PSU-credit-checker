@@ -1342,7 +1342,6 @@ export default function App() {
 
   const adminMenus = [
     { route: '/admin/stats', label: t.menuAdminStats, icon: LayoutDashboard },
-    { route: '/admin/curriculums', label: t.menuAdminCurriculums, icon: GraduationCap },
     { route: '/admin/users', label: t.menuAdminUsers, icon: UserCog },
     { route: '/admin/logs', label: t.menuAdminLogs, icon: ScrollText }
   ];
@@ -2822,36 +2821,7 @@ export default function App() {
             );
           })()}
 
-          {/* VIEW: Curriculums & Logs */}
-          {currentRoute === '/admin/curriculums' && (
-            <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">
-                {lang === 'th' ? 'จัดการโครงสร้างหลักสูตร' : 'Curriculum Structure Management'}
-              </h3>
-              <div className="w-full overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                      <th className="p-3">{lang === 'th' ? 'ชื่อหลักสูตร' : 'Curriculum Name'}</th>
-                      <th className="p-3">{lang === 'th' ? 'ระดับ' : 'Degree Level'}</th>
-                      <th className="p-3">{lang === 'th' ? 'คณะ' : 'Faculty'}</th>
-                      <th className="p-3">{t.credits}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {MOCK.admin.curriculums.map(c => (
-                      <tr key={c.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
-                        <td className="p-3 font-medium text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
-                        <td className="p-3 text-xs">{lang === 'th' ? c.level : c.levelEn}</td>
-                        <td className="p-3 text-xs">{lang === 'th' ? c.faculty : c.facultyEn}</td>
-                        <td className="p-3 tabular-nums font-semibold">{c.credits}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {/* VIEW: Admin Audit Logs */}
 
           {currentRoute === '/admin/logs' && (
             <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">

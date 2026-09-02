@@ -1216,6 +1216,7 @@ export default function App() {
   const [selectedSubView, setSelectedSubView] = useState('all');
   const [onlyNotTaken, setOnlyNotTaken] = useState(false);
   const [passedCatCurrentPage, setPassedCatCurrentPage] = useState(1);
+  const [studentCurrentTermPage, setStudentCurrentTermPage] = useState(1);
   const [selectedCourseDetail, setSelectedCourseDetail] = useState(null);
   const [hoveredSegment, setHoveredSegment] = useState(null);
   const [statsPeriod, setStatsPeriod] = useState('daily');
@@ -1857,45 +1858,70 @@ export default function App() {
               </div>
 
               {/* Current Term Registered Courses */}
-              <div id="tour-current-enrollment" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-                <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white mb-3">
-                  {t.currentSemesterCourses}
-                </h3>
-                <div className="w-full overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                        <th className="p-3">{t.courseCode}</th>
-                        <th className="p-3">{t.courseName}</th>
-                        <th className="p-3">{t.credits}</th>
-                        <th className="p-3">{t.category}</th>
-                        <th className="p-3">{t.time}</th>
-                        <th className="p-3">{t.status}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {MOCK.student.currentSemesterCourses.map(c => (
-                        <tr
-                          key={c.code}
-                          onClick={() => handleOpenCourseDetail(c)}
-                          className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
-                        >
-                          <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
-                          <td className="p-3 font-medium text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
-                          <td className="p-3 tabular-nums">{c.credits}</td>
-                          <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
-                          <td className="p-3 text-xs text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? c.time : c.timeEn}</td>
-                          <td className="p-3">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
-                              {lang === 'th' ? c.status : c.statusEn}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              {(() => {
+                const currentCourses = MOCK.student.currentSemesterCourses;
+                const pageSize = 5;
+                const totalPages = Math.ceil(currentCourses.length / pageSize) || 1;
+                const validPage = Math.min(studentCurrentTermPage, totalPages);
+                const pagedCourses = currentCourses.slice((validPage - 1) * pageSize, validPage * pageSize);
+
+                return (
+                  <div id="tour-current-enrollment" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+                        {t.currentSemesterCourses}
+                      </h3>
+                      <span className="text-xs text-slate-500 dark:text-[#A8B4C7] font-medium">
+                        {lang === 'th' ? `รวม ${currentCourses.reduce((sum, c) => sum + c.credits, 0)} หน่วยกิต` : `Total ${currentCourses.reduce((sum, c) => sum + c.credits, 0)} Credits`}
+                      </span>
+                    </div>
+
+                    <div className="w-full overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-sm">
+                        <thead>
+                          <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                            <th className="p-3">{t.courseCode}</th>
+                            <th className="p-3">{t.courseName}</th>
+                            <th className="p-3">{t.credits}</th>
+                            <th className="p-3">{t.category}</th>
+                            <th className="p-3">{t.time}</th>
+                            <th className="p-3">{t.status}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pagedCourses.map(c => (
+                            <tr
+                              key={c.code}
+                              onClick={() => handleOpenCourseDetail(c)}
+                              className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
+                            >
+                              <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
+                              <td className="p-3 font-medium text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
+                              <td className="p-3 tabular-nums">{c.credits}</td>
+                              <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
+                              <td className="p-3 text-xs text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? c.time : c.timeEn}</td>
+                              <td className="p-3">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
+                                  {lang === 'th' ? c.status : c.statusEn}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination Control */}
+                    <PaginationControl
+                      currentPage={validPage}
+                      totalItems={currentCourses.length}
+                      pageSize={pageSize}
+                      onPageChange={setStudentCurrentTermPage}
+                      lang={lang}
+                    />
+                  </div>
+                );
+              })()}
             </div>
           )}
 

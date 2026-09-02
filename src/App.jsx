@@ -1322,8 +1322,8 @@ export default function App() {
           popover: {
             title: isThai ? 'ข้อมูลนักศึกษา & ผลการเรียน' : 'Student Profile & Academic Summary',
             description: isThai
-              ? 'แสดงข้อมูลชื่อ-สกุล รหัสนักศึกษา หลักสูตร เกรดเฉลี่ยสะสม (GPA) อาจารย์ที่ปรึกษา และปุ่มส่งออกรายงาน PDF สำหรับใช้ยื่นคำร้อง'
-              : 'Displays student profile, curriculum, cumulative GPA, academic advisor, and official PDF export button.',
+              ? 'แสดงข้อมูลชื่อ-สกุล รหัสนักศึกษา หลักสูตร เกรดเฉลี่ยสะสม (GPAX) อาจารย์ที่ปรึกษา และปุ่มส่งออกรายงาน PDF สำหรับใช้ยื่นคำร้อง'
+              : 'Displays student profile, curriculum, cumulative GPAX, academic advisor, and official PDF export button.',
             side: 'bottom',
             align: 'start'
           }
@@ -1355,8 +1355,8 @@ export default function App() {
           popover: {
             title: isThai ? 'รายวิชาที่ลงทะเบียนในภาคการศึกษาปัจจุบัน' : 'Current Term Enrollment',
             description: isThai
-              ? 'รายการวิชาที่กำลังศึกษาในภาค 2/2569 จำนวนหน่วยกิต กลุ่มเรียน และสถานะการลงทะเบียน'
-              : 'View courses enrolled in Term 2/2026 along with credits, sections, and schedule.',
+              ? 'รายการวิชาที่กำลังศึกษาในภาค 1/2569 จำนวนหน่วยกิต เวลาเรียน และสถานะการลงทะเบียน พร้อมระบบแบ่งหน้า'
+              : 'View courses enrolled in Term 1/2026 along with credits, schedules, and pagination controls.',
             side: 'top',
             align: 'center'
           }
@@ -1365,14 +1365,36 @@ export default function App() {
     } else if (currentRoute === '/student/categories') {
       steps = [
         {
-          element: '#tour-search-catalog',
+          element: '#tour-category-tabs',
           popover: {
-            title: isThai ? 'ค้นหาและกรองรายวิชา' : 'Search & Filter Courses',
+            title: isThai ? 'หมวดหมู่วิชาตามโครงสร้างหลักสูตร' : 'Curriculum Category Tabs',
             description: isThai
-              ? 'ค้นหาตามรหัสวิชา ชื่อวิชา และสลับหมวดหมู่วิชา 4 หมวดได้อย่างสะดวกรวดเร็ว'
-              : 'Search courses by code, title, and instantly filter across 4 curriculum categories.',
+              ? 'สลับดูรายวิชาในแต่ละหมวด หรือเลือกดูทุกหมวดวิชาพร้อมกันได้อย่างสะดวก'
+              : 'Switch between 4 curriculum categories or view all categories together.',
             side: 'bottom',
             align: 'start'
+          }
+        },
+        {
+          element: '#tour-search-catalog',
+          popover: {
+            title: isThai ? 'ค้นหาและกรองมุมมองรายวิชา' : 'Search & Filter Controls',
+            description: isThai
+              ? 'ค้นหาตามรหัสวิชา ชื่อวิชา กรองเฉพาะวิชาที่ยังไม่เคยลง และเลือกสลับมุมมองที่ต้องการ'
+              : 'Search courses by code or title, filter uncompleted courses, and switch display views.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-remaining-courses',
+          popover: {
+            title: isThai ? 'รายวิชาที่ต้องลงทะเบียนในหมวดนี้' : 'Required & Elective Plan',
+            description: isThai
+              ? 'รายวิชาตามแผนการเรียนที่ยังไม่ได้ลงทะเบียน คลิกที่การ์ดวิชาเพื่อดูรายละเอียดและวิชาบังคับก่อน'
+              : 'List of remaining required and elective courses in this category. Click any card for prerequisites.',
+            side: 'top',
+            align: 'center'
           }
         },
         {
@@ -1380,8 +1402,66 @@ export default function App() {
           popover: {
             title: isThai ? 'รายวิชาที่เปิดรับและจำนวนที่นั่ง' : 'Available Course Catalog',
             description: isThai
-              ? 'แสดงรายวิชาที่เปิดสอน ตารางเรียน ผู้สอน และแถบที่นั่งว่างแบบเรียลไทม์ คลิกเพื่อดูรายละเอียดวิชา'
-              : 'Explore open courses, schedules, instructors, and real-time seat availability meters.',
+              ? 'แสดงรายวิชาที่เปิดสอน ตารางเรียน อาจารย์ผู้สอน และแถบที่นั่งว่างแบบเรียลไทม์'
+              : 'Explore open courses, class schedules, instructors, and live seat availability meters.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        {
+          element: '#tour-passed-courses',
+          popover: {
+            title: isThai ? 'รายวิชาที่ผ่านแล้วในหมวดนี้' : 'Passed Courses in Category',
+            description: isThai
+              ? 'ตารางสรุปรายวิชาที่สอบผ่านแล้ว พร้อมเกรดที่ได้รับ และระบบแบ่งหน้า Pagination'
+              : 'Summary table of passed courses and grades in this category with pagination controls.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/student/history') {
+      steps = [
+        {
+          element: '#tour-history-summary',
+          popover: {
+            title: isThai ? 'สรุปผลการศึกษาและหน่วยกิต' : 'Academic Metrics Summary',
+            description: isThai
+              ? 'สรุปหน่วยกิตสะสมทั้งหมด เกรดเฉลี่ยสะสม (GPAX) และหน่วยกิตประจำภาคที่เลือก'
+              : 'Displays total earned credits, cumulative GPAX, and semester GPA metrics.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-history-filters',
+          popover: {
+            title: isThai ? 'ค้นหาและกรองประวัติการเรียน' : 'History Search & Term Filters',
+            description: isThai
+              ? 'ค้นหาตามรหัสวิชา ชื่อวิชา และเลือกกรองตามปีการศึกษาหรือภาคเรียนที่ต้องการ'
+              : 'Search by course code/title and filter by academic year or semester term.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-history-pdf',
+          popover: {
+            title: isThai ? 'ส่งออกรายงานผลการเรียน PDF' : 'Export Official Transcript PDF',
+            description: isThai
+              ? 'พิมพ์หรือส่งออกใบรายงานผลการตรวจสอบหน่วยกิตตามแบบฟอร์มมาตรฐานของมหาวิทยาลัย'
+              : 'Print or export official PSU academic credit progression audit sheets.',
+            side: 'left',
+            align: 'center'
+          }
+        },
+        {
+          element: '#tour-history-table',
+          popover: {
+            title: isThai ? 'ตารางประวัติผลการเรียน' : 'Enrollment & Grades History',
+            description: isThai
+              ? 'รายการวิชาทั้งหมดที่ผ่านการประเมินผล พร้อมเกรด ภาคการศึกษา และระบบแบ่งหน้า'
+              : 'Complete transcript of completed courses, grades, and pagination controls.',
             side: 'top',
             align: 'center'
           }
@@ -1394,8 +1474,47 @@ export default function App() {
           popover: {
             title: isThai ? 'รายชื่อนักศึกษาในความดูแล' : 'Advisees Management Directory',
             description: isThai
-              ? 'ตรวจสอบสถานะความก้าวหน้าทางการศึกษาของนักศึกษา (ปกติ, เสี่ยง, ต้องติดตามด่วน) และเข้าดูรายละเอียดผลการเรียนรายบุคคล'
-              : 'Monitor advisees academic progress statuses (On-track, Warning, Critical) and drill into individual student profiles.',
+              ? 'ตรวจสอบสถานะความก้าวหน้าทางการศึกษาของนักศึกษา (ปกติ, เสี่ยง, ต้องติดตามด่วน) พร้อมระบบค้นหาและแบ่งหน้า'
+              : 'Monitor advisees academic progress statuses (On-track, Warning, Critical) with search and pagination.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/advisor/department') {
+      steps = [
+        {
+          element: '#tour-advisor-department',
+          popover: {
+            title: isThai ? 'สถิติภาพรวมภาควิชา' : 'Department Analytics Overview',
+            description: isThai
+              ? 'ภาพรวมจำนวนนักศึกษาแยกตามชั้นปี และสัดส่วนสถานะความก้าวหน้าทางการศึกษาของทั้งภาควิชา'
+              : 'Department-wide breakdown of students by academic year and progress status distribution.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/advisor/student-detail' || currentRoute === '/admin/user-detail') {
+      steps = [
+        {
+          element: '#tour-advisor-detail-header',
+          popover: {
+            title: isThai ? 'ข้อมูลผลการเรียนและสถานะนักศึกษา' : 'Advisee Academic Profile',
+            description: isThai
+              ? 'แสดงข้อมูลนักศึกษา สถานะความก้าวหน้าตามเกณฑ์ และความคืบหน้ารายชั้นปี'
+              : 'Displays advisee profile, status assessment against benchmarks, and 4-year milestones.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-advisor-consultation',
+          popover: {
+            title: isThai ? 'บันทึกการให้คำปรึกษาทางวิชาการ' : 'Academic Consultation Notes',
+            description: isThai
+              ? 'บันทึกคำแนะนำ การติดตามผล และข้อตกลงในการลงทะเบียนเรียนของนักศึกษา'
+              : 'Record academic advice, registration follow-ups, and student consultation logs.',
             side: 'top',
             align: 'center'
           }
@@ -1404,12 +1523,73 @@ export default function App() {
     } else if (currentRoute === '/admin/stats') {
       steps = [
         {
-          element: '#tour-admin-stats',
+          element: '#tour-admin-stats-summary',
           popover: {
-            title: isThai ? 'สถิติการใช้งานระบบภาพรวม' : 'System-wide Telemetry Analytics',
+            title: isThai ? 'ตัวชี้วัดสถิติการใช้งานระบบ' : 'System Telemetry KPIs',
             description: isThai
-              ? 'สถิติจำนวนผู้ใช้งาน การตรวจสอบหน่วยกิต และการส่งออกรายงาน PDF แยกตามวิทยาเขตและช่วงเวลา'
-              : 'Real-time telemetry of active users, audit checks, and PDF exports across 5 PSU campuses.',
+              ? 'ภาพรวมจำนวนผู้ใช้งาน การตรวจสอบหน่วยกิต ผู้ใช้ใหม่ และการส่งออกรายงาน PDF'
+              : 'Overview of total active users, credit checks, new accounts, and PDF exports.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-admin-stats-period',
+          popover: {
+            title: isThai ? 'ตัวกรองช่วงเวลาสถิติ' : 'Telemetry Timeframe Filter',
+            description: isThai
+              ? 'เลือกดูสถิติย้อนหลังแบบ รายวัน, รายสัปดาห์, รายเดือน, รายภาคการศึกษา หรือรายปี'
+              : 'Filter system telemetry data by Daily, Weekly, Monthly, Term, or Yearly periods.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-admin-stats-campus',
+          popover: {
+            title: isThai ? 'สถิติแยกตาม 5 วิทยาเขต ม.อ.' : 'PSU 5 Campuses Usage',
+            description: isThai
+              ? 'สัดส่วนจำนวนการตรวจสอบหน่วยกิตสะสมของแต่ละวิทยาเขต (หาดใหญ่, ปัตตานี, ภูเก็ต, สุราษฎร์ธานี, ตรัง)'
+              : 'Breakdown of cumulative credit check audits across all 5 PSU campuses.',
+            side: 'right',
+            align: 'center'
+          }
+        },
+        {
+          element: '#tour-admin-stats-faculty',
+          popover: {
+            title: isThai ? 'สถิติตรวจสอบแยกตามคณะ' : 'Audit Checks by Faculty',
+            description: isThai
+              ? 'คณะที่มีการเข้าใช้งานและตรวจสอบหน่วยกิตสะสมสูงสุดในระบบ'
+              : 'Faculties with the highest volume of curriculum credit checks.',
+            side: 'left',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/admin/users') {
+      steps = [
+        {
+          element: '#tour-admin-users-table',
+          popover: {
+            title: isThai ? 'จัดการและตรวจสอบบัญชีผู้ใช้งาน' : 'User Accounts Directory',
+            description: isThai
+              ? 'ค้นหาและตรวจสอบบัญชีผู้ใช้ในวิทยาเขต พร้อมดูรายละเอียดผลการเรียนและสิทธิ์การใช้งาน'
+              : 'Manage, search, and audit user accounts within campus scope with pagination.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/admin/logs') {
+      steps = [
+        {
+          element: '#tour-admin-logs-table',
+          popover: {
+            title: isThai ? 'บันทึกประวัติการใช้งานระบบ (Audit Trail)' : 'System Audit Activity Logs',
+            description: isThai
+              ? 'ตรวจสอบบันทึกกิจกรรมย้อนหลัง เวลา ผู้ใช้ และการดำเนินการสำคัญในระบบ'
+              : 'Review system activity logs, timestamps, user actions, and security audit trails.',
             side: 'top',
             align: 'center'
           }
@@ -1533,7 +1713,8 @@ export default function App() {
   const adminMenus = [
     { route: '/admin/stats', label: t.menuAdminStats, icon: LayoutDashboard },
     { route: '/admin/users', label: t.menuAdminUsers, icon: UserCog },
-    { route: '/admin/logs', label: t.menuAdminLogs, icon: ScrollText }
+    { route: '/admin/logs', label: t.menuAdminLogs, icon: ScrollText },
+    { route: '#tour', label: t.menuTour, icon: HelpCircle, action: () => startTour() }
   ];
 
   const currentMenus = currentRole === 'student' ? studentMenus : currentRole === 'advisor' ? advisorMenus : adminMenus;
@@ -1671,7 +1852,7 @@ export default function App() {
           </div>
         </div>
 
-        <nav className="flex-1 p-3 flex flex-col gap-1.5 overflow-y-auto">
+        <nav id="tour-navigation-menu" className="flex-1 p-3 flex flex-col gap-1.5 overflow-y-auto">
           {currentMenus.map((item) => {
             const Icon = item.icon;
             const isActive = currentRoute === item.route;
@@ -1945,7 +2126,7 @@ export default function App() {
             return (
               <div className="flex flex-col gap-5 pb-20">
                 {/* Category Navigation Tabs */}
-                <div className="flex gap-2 border-b border-slate-200 dark:border-[#2C2E33] overflow-x-auto pb-1">
+                <div id="tour-category-tabs" className="flex gap-2 border-b border-slate-200 dark:border-[#2C2E33] overflow-x-auto pb-1">
                   <button
                     onClick={() => {
                       setActiveCategoryTab('all-cats');
@@ -2084,7 +2265,7 @@ export default function App() {
 
                 {/* Section 1: Remaining Courses */}
                 {(selectedSubView === 'all' || selectedSubView === 'remaining') && remainingInCat.length > 0 && (
-                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
+                  <div id="tour-remaining-courses" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
                     <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                       <BookOpen size={18} className="text-amber-500" />
                       {t.coursesRequiredInCat} ({remainingInCat.length})
@@ -2232,7 +2413,7 @@ export default function App() {
                   const pagedPassed = filteredPassed.slice((validPage - 1) * pageSize, validPage * pageSize);
 
                   return (
-                    <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                    <div id="tour-passed-courses" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
                       <div className="flex justify-between items-center flex-wrap gap-2">
                         <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                           <CheckCircle2 size={18} className="text-emerald-500" />
@@ -2324,7 +2505,7 @@ export default function App() {
 
             return (
               <div className="flex flex-col gap-5">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div id="tour-history-summary" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-4 shadow-sm">
                     <span className="text-xs text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? 'หน่วยกิตสะสมทั้งหมด' : 'Total Credits'}</span>
                     <div className="tabular-nums text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
@@ -2351,13 +2532,13 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+                <div id="tour-history-filters" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-4 shadow-sm flex flex-col gap-3">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <h3 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                       <HistoryIcon size={18} className="text-blue-600 dark:text-blue-400" />
                       {t.historyTitle}
                     </h3>
-                    <button onClick={() => setIsPdfOpen(true)} className="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5">
+                    <button id="tour-history-pdf" onClick={() => setIsPdfOpen(true)} className="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5">
                       <Download size={14} /> {t.exportPdfBtn}
                     </button>
                   </div>
@@ -2417,7 +2598,7 @@ export default function App() {
                   const pagedHistoryCourses = filteredHistoryCourses.slice((validPage - 1) * pageSize, validPage * pageSize);
 
                   return (
-                    <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                    <div id="tour-history-table" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl overflow-hidden shadow-sm flex flex-col">
                       <div className="w-full overflow-x-auto">
                         <table className="w-full text-left border-collapse text-sm">
                           <thead>
@@ -2648,7 +2829,7 @@ export default function App() {
                 </div>
 
                 {/* Student Profile Header Card */}
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div id="tour-advisor-detail-header" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div className="flex items-center gap-4">
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl flex-shrink-0 ${
                       evalStatus.status === 'danger'
@@ -2843,7 +3024,7 @@ export default function App() {
                 </div>
 
                 {/* Consultation Notes */}
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+                <div id="tour-advisor-consultation" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-3">
                   <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <ScrollText size={18} className="text-blue-600 dark:text-blue-400" />
                     {t.consultationNotesTitle}
@@ -2897,7 +3078,7 @@ export default function App() {
 
           {/* VIEW: Advisor Department Overview */}
           {currentRoute === '/advisor/department' && (
-            <div className="flex flex-col gap-5">
+            <div id="tour-advisor-department" className="flex flex-col gap-5">
               <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
                 <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{t.deptStatsTitle}</h2>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-[#A8B4C7] mt-1">
@@ -2950,7 +3131,7 @@ export default function App() {
             const periodData = MOCK.admin.statsByPeriod[statsPeriod];
             return (
               <div id="tour-admin-stats" className="flex flex-col gap-5">
-                <div className="flex justify-start items-center flex-wrap gap-2">
+                <div id="tour-admin-stats-period" className="flex justify-start items-center flex-wrap gap-2">
                   <div className="flex gap-1 bg-slate-200 dark:bg-[#2A3038] p-1 rounded-xl">
                     {['daily', 'weekly', 'monthly', 'term', 'year'].map(p => (
                       <button
@@ -2974,7 +3155,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <div id="tour-admin-stats-summary" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                   <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-4 shadow-sm">
                     <span className="text-xs text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? 'ผู้ใช้งานทั้งหมด' : 'Total Users'}</span>
                     <div className="tabular-nums text-2xl font-extrabold text-slate-900 dark:text-white mt-1">{periodData.totalUsers}</div>
@@ -2995,7 +3176,7 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
+                  <div id="tour-admin-stats-campus" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
                     <div>
                       <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-1">
                         {lang === 'th' ? 'สัดส่วนการใช้งานแยกตาม 5 วิทยาเขต ม.อ.' : 'PSU Campuses Usage'}
@@ -3022,7 +3203,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
+                  <div id="tour-admin-stats-faculty" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
                     <div>
                       <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-1">
                         {lang === 'th' ? 'สถิติการตรวจสอบหน่วยกิตแยกตามคณะ' : 'Checks by Faculty'}
@@ -3075,7 +3256,7 @@ export default function App() {
             const pagedList = filtered.slice((validPage - 1) * pageSize, validPage * pageSize);
 
             return (
-              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+              <div id="tour-admin-users-table" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
@@ -3291,7 +3472,7 @@ export default function App() {
           {/* VIEW: Admin Audit Logs */}
 
           {currentRoute === '/admin/logs' && (
-            <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
+            <div id="tour-admin-logs-table" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
               <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">
                 {lang === 'th' ? 'บันทึกประวัติการใช้งานระบบ (System Logs)' : 'System Audit & Activity Logs'}
               </h3>

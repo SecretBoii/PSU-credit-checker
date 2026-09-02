@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { driver } from 'driver.js';
+import 'driver.js/dist/driver.css';
 import {
   GraduationCap,
   LayoutDashboard,
@@ -22,11 +24,18 @@ import {
   KeyRound,
   HelpCircle,
   ChevronRight,
+  ChevronLeft,
   X,
   Eye,
   PanelLeft,
   Menu,
-  LogOut
+  LogOut,
+  ArrowLeft,
+  FileText,
+  Building2,
+  Settings,
+  Clock,
+  Bookmark
 } from 'lucide-react';
 
 const CATEGORY_THEME = {
@@ -213,6 +222,148 @@ const I18N = {
   }
 };
 
+const generateMockAdvisees = () => {
+  const thaiFirstNames = ['สมชาย', 'ปิยะนุช', 'ธนกฤต', 'อนุชา', 'กิตติศักดิ์', 'พรทิพย์', 'ณัฐวุฒิ', 'ศิริพร', 'ชานนท์', 'วิภาวดี', 'อภิสิทธิ์', 'วรัญญา', 'จิรวัฒน์', 'พัชรินทร์', 'ธีรภัทร', 'เกวลิน', 'พงศกร', 'สุชาดา', 'ธนาคาร', 'กานต์ธิดา', 'อัครพล', 'รุ่งทิวา', 'ศุภกร', 'สิริกานต์', 'ปิยวัฒน์', 'พิมพ์มาดา', 'วรพล', 'นภัสสร', 'ปฏิภาณ', 'อนัญพร', 'กิตติธัช', 'เบญญาภา', 'ธนภัทร', 'ชญานิษฐ์', 'สรวิศ', 'ทิพวรรณ', 'ปรเมศวร์', 'อริสา', 'วรเชษฐ์', 'ธวัลรัตน์', 'อานนท์', 'มัลลิกา', 'ภาณุวัฒน์', 'ลลิตา', 'ภานุเดช', 'ดวงใจ'];
+  const thaiLastNames = ['ใจดี', 'แก้วมณี', 'รักษ์ทอง', 'บุญเรือง', 'สุขเกษม', 'จันทร์กระจ่าง', 'วงศ์สุวรรณ', 'เจริญสุข', 'ศรีวิไล', 'พงษ์พาณิชย์', 'ทองคำ', 'สุวรรณรัตน์', 'คงแก้ว', 'วิจิตรพันธุ์', 'สถิตพงษ์', 'ประสิทธิ์ผล', 'ธรรมนูญ', 'ไชยสุวรรณ', 'อินทร์แก้ว', 'พัฒนกิจ', 'ศิริโชค', 'สมบัติผล', 'ชูรักษ์', 'บุญคง', 'มณีรัตน์', 'เพชรจำรูญ', 'สุขสมบูรณ์', 'วัฒนประดิษฐ์', 'แสงจันทร์', 'ไพศาล', 'กอบเกื้อ', 'อัมพวรรณ', 'ชัยมงคล', 'สิทธิชัย', 'สุขประสิทธิ์', 'วรกุล', 'นาคสงวน', 'บริบูรณ์', 'ปิยวัจน์', 'นันทิวัชร'];
+  const enFirstNames = ['Somchai', 'Piyanuch', 'Thanakrit', 'Anucha', 'Kittisak', 'Pornthip', 'Natthawut', 'Siriporn', 'Chanon', 'Vipawadee', 'Apisit', 'Waranya', 'Jirawat', 'Patcharin', 'Theeraphat', 'Kewalin', 'Pongsakorn', 'Suchada', 'Thanakhon', 'Kantida', 'Akkarapol', 'Rungtiwa', 'Suphakon', 'Sirikarn', 'Piyawat', 'Pimmada', 'Worapol', 'Napassorn', 'Patiphan', 'Ananyaporn', 'Kittithat', 'Benyapha', 'Thanaphat', 'Chayanit', 'Sorawit', 'Thipwawan', 'Poramet', 'Arisa', 'Worachet', 'Thawanrat', 'Arnon', 'Mallika', 'Panuwat', 'Lalita', 'Panudet', 'Duangjai'];
+  const enLastNames = ['Jaidee', 'Kaewmanee', 'Rakthong', 'Boonruang', 'Sukkasem', 'Jankrajang', 'Wongsuwan', 'Charoensuk', 'Sriwilai', 'Pongpanich', 'Thongkham', 'Suwannarat', 'Kongkaew', 'Vijitphan', 'Sathitpong', 'Prasitphol', 'Thammanoon', 'Chaisuwann', 'Inkaew', 'Pattanakit', 'Sirichok', 'Sombatphol', 'Choorak', 'Boonkong', 'Maneerat', 'Petchjamroon', 'Suksomboon', 'Wattanapradit', 'Saengjan', 'Phaisan', 'Kopkuea', 'Amphawan', 'Chaimongkol', 'Sitthichai', 'Sukprasit', 'Worakul', 'Naksanguan', 'Boriboon', 'Piyawat', 'Nanthiwatchara'];
+
+  const students = [];
+  for (let i = 0; i < 48; i++) {
+    const isFemale = i % 3 === 1;
+    const prefixTh = isFemale ? 'นางสาว' : 'นาย';
+    const prefixEn = isFemale ? 'Ms.' : 'Mr.';
+    const fnTh = thaiFirstNames[i % thaiFirstNames.length];
+    const lnTh = thaiLastNames[i % thaiLastNames.length];
+    const fnEn = enFirstNames[i % enFirstNames.length];
+    const lnEn = enLastNames[i % enLastNames.length];
+    const year = (i % 4) + 1;
+    const entryYear = 68 - year;
+    const idNum = String(i + 1).padStart(4, '0');
+    const id = `${entryYear}1011${idNum}`;
+    
+    let target = year === 1 ? 33 : year === 2 ? 66 : year === 3 ? 99 : 132;
+    let creditsEarned;
+    let gpa;
+    let status, statusText, statusTextEn;
+    
+    if (i === 0) {
+      creditsEarned = 99; gpa = 3.24; status = 'normal'; statusText = 'ปกติ'; statusTextEn = 'Normal';
+    } else if (i === 1) {
+      creditsEarned = 102; gpa = 3.61; status = 'normal'; statusText = 'ปกติ'; statusTextEn = 'Normal';
+    } else if (i === 2) {
+      creditsEarned = 84; gpa = 2.41; status = 'warning'; statusText = 'เสี่ยง'; statusTextEn = 'Warning';
+    } else if (i === 3) {
+      creditsEarned = 92; gpa = 1.94; status = 'danger'; statusText = 'ต้องติดตามด่วน'; statusTextEn = 'Critical';
+    } else {
+      const r = i % 5;
+      if (r === 0 || r === 1 || r === 2) {
+        creditsEarned = target + (i % 6);
+        gpa = Number((2.75 + ((i % 12) * 0.1)).toFixed(2));
+        status = 'normal'; statusText = 'ปกติ'; statusTextEn = 'Normal';
+      } else if (r === 3) {
+        creditsEarned = Math.max(15, target - 10 - (i % 8));
+        gpa = Number((2.15 + ((i % 5) * 0.08)).toFixed(2));
+        status = 'warning'; statusText = 'เสี่ยง'; statusTextEn = 'Warning';
+      } else {
+        creditsEarned = Math.max(10, target - 22 - (i % 12));
+        gpa = Number((1.85 + ((i % 4) * 0.05)).toFixed(2));
+        status = 'danger'; statusText = 'ต้องติดตามด่วน'; statusTextEn = 'Critical';
+      }
+    }
+
+    students.push({
+      id,
+      name: `${prefixTh}${fnTh} ${lnTh}`,
+      nameEn: `${prefixEn} ${fnEn} ${lnEn}`,
+      year,
+      creditsEarned,
+      creditsReq: 132,
+      gpa,
+      status,
+      statusText,
+      statusTextEn,
+      faculty: 'คณะวิทยาศาสตร์',
+      facultyEn: 'Faculty of Science',
+      campus: 'วิทยาเขตหาดใหญ่',
+      campusEn: 'Hat Yai Campus',
+      curriculum: 'วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์',
+      curriculumEn: 'B.Sc. in Computer Science',
+      advisor: 'ผศ.ดร.วิชัย ทองสุข',
+      advisorEn: 'Asst. Prof. Dr. Wichai Thongsuk'
+    });
+  }
+  return students;
+};
+
+const generateMockAdminUsers = (adviseeStudents) => {
+  const users = [];
+
+  adviseeStudents.forEach((s, idx) => {
+    const emailPrefix = s.nameEn.toLowerCase().replace(/^(mr\.|ms\.|mrs\.)\s*/, '').replace(/\s+/g, '.').replace(/[^a-z.]/g, '');
+    const email = `${emailPrefix || 'student' + idx}@psu.ac.th`;
+    const day = (idx % 28) + 1;
+    const hour = String(8 + (idx % 14)).padStart(2, '0');
+    const min = String((idx * 7) % 60).padStart(2, '0');
+    users.push({
+      id: s.id,
+      name: s.name,
+      nameEn: s.nameEn,
+      email,
+      role: 'นักศึกษา',
+      roleEn: 'Student',
+      campus: 'วิทยาเขตหาดใหญ่',
+      campusEn: 'Hat Yai Campus',
+      department: 'คณะวิทยาศาสตร์',
+      departmentEn: 'Faculty of Science',
+      lastLogin: `${day} ส.ค. 2569 ${hour}:${min}`,
+      lastLoginEn: `${day} Aug 2026 ${hour}:${min}`
+    });
+  });
+
+  users.push({
+    id: "u2",
+    name: "ผศ.ดร.วิชัย ทองสุข",
+    nameEn: "Asst. Prof. Dr. Wichai Thongsuk",
+    email: "wichai.t@psu.ac.th",
+    role: "อาจารย์",
+    roleEn: "Advisor",
+    campus: "วิทยาเขตหาดใหญ่",
+    campusEn: "Hat Yai Campus",
+    department: "ภาควิชาวิทยาการคอมพิวเตอร์",
+    departmentEn: "Dept. of Computer Science",
+    lastLogin: "1 ก.ย. 2569 20:15",
+    lastLoginEn: "1 Sep 2026 20:15"
+  });
+
+  users.push({
+    id: "u3",
+    name: "นายสมศักดิ์ แอดมิน",
+    nameEn: "Mr. Somsak Admin",
+    email: "somsak.admin@psu.ac.th",
+    role: "ผู้ดูแลระบบ",
+    roleEn: "Admin",
+    campus: "วิทยาเขตหาดใหญ่",
+    campusEn: "Hat Yai Campus",
+    department: "สำนักนวัตกรรมดิจิทัล",
+    departmentEn: "Digital Innovation Office",
+    lastLogin: "1 ก.ย. 2569 21:45",
+    lastLoginEn: "1 Sep 2026 21:45"
+  });
+
+  users.push(
+    { id: "6720110015", name: "นายอับดุลเลาะห์ สาและ", nameEn: "Mr. Abdullah Salaeh", email: "abdullah.s@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตปัตตานี", campusEn: "Pattani Campus", department: "คณะศึกษาศาสตร์", departmentEn: "Faculty of Education", lastLogin: "31 ส.ค. 2569 14:10", lastLoginEn: "31 Aug 2026 14:10" },
+    { id: "6730110042", name: "นางสาวกัญญาภัทร สิริสุข", nameEn: "Ms. Kanyapat Sirisuk", email: "kanyapat.s@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตภูเก็ต", campusEn: "Phuket Campus", department: "คณะการบริการและการท่องเที่ยว", departmentEn: "Faculty of Hospitality and Tourism", lastLogin: "28 ส.ค. 2569 16:30", lastLoginEn: "28 Aug 2026 16:30" },
+    { id: "6740110009", name: "นายธนวัฒน์ รัตนพันธ์", nameEn: "Mr. Thanawat Rattanapan", email: "thanawat.r@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตสุราษฎร์ธานี", campusEn: "Surat Thani Campus", department: "คณะวิทยาศาสตร์และเทคโนโลยีอุตสาหกรรม", departmentEn: "Faculty of Science and Industrial Tech", lastLogin: "29 ส.ค. 2569 09:15", lastLoginEn: "29 Aug 2026 09:15" },
+    { id: "6750110018", name: "นางสาวสุภาพร แสงทอง", nameEn: "Ms. Supaporn Saengthong", email: "supaporn.s@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตตรัง", campusEn: "Trang Campus", department: "คณะพาณิชยศาสตร์และการจัดการ", departmentEn: "Faculty of Commerce and Management", lastLogin: "27 ส.ค. 2569 11:50", lastLoginEn: "27 Aug 2026 11:50" }
+  );
+
+  return users;
+};
+
+const MOCK_ADVISEES_DATA = generateMockAdvisees();
+const MOCK_ADMIN_USERS_DATA = generateMockAdminUsers(MOCK_ADVISEES_DATA);
+
 const MOCK = {
   student: {
     id: "6710110001",
@@ -329,12 +480,7 @@ const MOCK = {
   advisor: {
     name: "ผศ.ดร.วิชัย ทองสุข",
     nameEn: "Asst. Prof. Dr. Wichai Thongsuk",
-    students: [
-      { id: "6710110001", name: "นายสมชาย ใจดี", nameEn: "Mr. Somchai Jaidee", year: 3, creditsEarned: 99, creditsReq: 132, gpa: 3.24, status: "normal", statusText: "ปกติ", statusTextEn: "Normal", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
-      { id: "6710110002", name: "นางสาวปิยะนุช แก้วมณี", nameEn: "Ms. Piyanuch Kaewmanee", year: 3, creditsEarned: 102, creditsReq: 132, gpa: 3.61, status: "normal", statusText: "ปกติ", statusTextEn: "Normal", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
-      { id: "6710110003", name: "นายธนกฤต รักษ์ทอง", nameEn: "Mr. Thanakrit Rakthong", year: 3, creditsEarned: 78, creditsReq: 132, gpa: 2.41, status: "warning", statusText: "เสี่ยง", statusTextEn: "Warning", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
-      { id: "6610110024", name: "นายอนุชา บุญเรือง", nameEn: "Mr. Anucha Boonruang", year: 4, creditsEarned: 92, creditsReq: 132, gpa: 1.94, status: "danger", statusText: "ต้องติดตามด่วน", statusTextEn: "Critical", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" }
-    ],
+    students: MOCK_ADVISEES_DATA,
     consultations: [
       { id: 1, studentId: "6710110001", date: "28 ก.พ. 2569", dateEn: "28 Feb 2026", author: "ผศ.ดร.วิชัย ทองสุข", authorEn: "Asst. Prof. Dr. Wichai Thongsuk", note: "เข้าพบเพื่อวางแผนลงทะเบียนภาค 2/2569 แนะนำให้เก็บวิชาเฉพาะบังคับ 344-303 และเริ่มหาหัวข้อโปรเจกต์", noteEn: "Consulted on Term 2/2026 course plan. Recommended completing required 344-303 and starting senior project research." }
     ]
@@ -361,21 +507,10 @@ const MOCK = {
       { nameTh: "คณะวิทยาการจัดการ", nameEn: "Faculty of Management Sciences", count: "31,800", percent: 14, color: "#EA580C" },
       { nameTh: "คณะมนุษยศาสตร์และสังคมศาสตร์", nameEn: "Faculty of Humanities", count: "27,500", percent: 12, color: "#9333EA" }
     ],
-    curriculums: [
-      { id: "c1", nameTh: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", nameEn: "B.Sc. in Computer Science", level: "ปริญญาตรี", levelEn: "Bachelor's", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", year: "2567", credits: 132, status: "active" },
-      { id: "c2", nameTh: "วิทยาศาสตรบัณฑิต สาขาวิชาเทคโนโลยีสารสนเทศ", nameEn: "B.Sc. in Information Technology", level: "ปริญญาตรี", levelEn: "Bachelor's", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", year: "2565", credits: 128, status: "active" },
-      { id: "c3", nameTh: "วิศวกรรมศาสตรบัณฑิต สาขาวิชาวิศวกรรมคอมพิวเตอร์", nameEn: "B.Eng. in Computer Engineering", level: "ปริญญาตรี", levelEn: "Bachelor's", faculty: "คณะวิศวกรรมศาสตร์", facultyEn: "Faculty of Engineering", year: "2566", credits: 140, status: "active" }
-    ],
-    users: [
-      { id: "6710110001", name: "นายสมชาย ใจดี", nameEn: "Mr. Somchai Jaidee", email: "somchai.j@psu.ac.th", role: "นักศึกษา", roleEn: "Student", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "1 ก.ย. 2569 21:30" },
-      { id: "6710110002", name: "นางสาวปิยะนุช แก้วมณี", nameEn: "Ms. Piyanuch Kaewmanee", email: "piyanuch.k@psu.ac.th", role: "นักศึกษา", roleEn: "Student", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "1 ก.ย. 2569 19:40" },
-      { id: "6610110024", name: "นายอนุชา บุญเรือง", nameEn: "Mr. Anucha Boonruang", email: "anucha.b@psu.ac.th", role: "นักศึกษา", roleEn: "Student", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "30 ส.ค. 2569 11:20" },
-      { id: "u2", name: "ผศ.ดร.วิชัย ทองสุข", nameEn: "Asst. Prof. Dr. Wichai Thongsuk", email: "wichai.t@psu.ac.th", role: "อาจารย์", roleEn: "Advisor", department: "ภาควิชาวิทยาการคอมพิวเตอร์", departmentEn: "Dept. of Computer Science", lastLogin: "1 ก.ย. 2569 20:15" },
-      { id: "u3", name: "นายสมศักดิ์ แอดมิน", nameEn: "Mr. Somsak Admin", email: "somsak.admin@psu.ac.th", role: "ผู้ดูแลระบบ", roleEn: "Admin", department: "สำนักนวัตกรรมดิจิทัล", departmentEn: "Digital Innovation Office", lastLogin: "1 ก.ย. 2569 21:45" }
-    ],
+    users: MOCK_ADMIN_USERS_DATA,
     logs: [
-      { id: "l1", time: "01/09/2569 21:45:10", user: "somsak.admin@psu.ac.th", role: "ผู้ดูแลระบบ", action: "แก้ไขหลักสูตร", target: "วท.บ. วิทยาการคอมพิวเตอร์ 2567", ip: "192.168.1.104" },
-      { id: "l2", time: "01/09/2569 21:30:22", user: "somchai.j@psu.ac.th", role: "นักศึกษา", action: "ส่งออกรายงาน PDF", target: "รายงานตรวจสอบหน่วยกิตสะสม", ip: "10.24.50.88" }
+      { id: "l1", time: "01/09/2569 21:45:10", timeEn: "01/09/2026 21:45:10", user: "somsak.admin@psu.ac.th", role: "ผู้ดูแลระบบ", roleEn: "Admin", action: "แก้ไขหลักสูตร", actionEn: "Update Curriculum", target: "วท.บ. วิทยาการคอมพิวเตอร์ 2567", targetEn: "B.Sc. Computer Science 2024", ip: "192.168.1.104" },
+      { id: "l2", time: "01/09/2569 21:30:22", timeEn: "01/09/2026 21:30:22", user: "somchai.j@psu.ac.th", role: "นักศึกษา", roleEn: "Student", action: "ส่งออกรายงาน PDF", actionEn: "Export PDF Report", target: "รายงานตรวจสอบหน่วยกิตสะสม", targetEn: "Academic Credit Audit Report", ip: "10.24.50.88" }
     ]
   }
 };
@@ -417,33 +552,90 @@ const ThemeSwitch = ({ theme, toggleTheme, lang = 'th' }) => {
       onClick={toggleTheme}
       title={label}
       aria-label={label}
-      className={`relative inline-flex h-9 w-16 shrink-0 cursor-pointer items-center rounded-full p-1 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner select-none ${
+      className={`relative inline-flex h-[38px] w-[76px] shrink-0 cursor-pointer items-center rounded-full p-[3px] transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner select-none ${
         isDark
           ? 'bg-slate-800 border border-slate-700 hover:border-blue-400'
           : 'bg-slate-200/90 border border-slate-300 hover:border-blue-400'
       }`}
     >
       {/* Background Icons */}
-      <span className="absolute left-1.5 flex items-center justify-center text-amber-500 transition-opacity duration-200 pointer-events-none">
-        <Sun size={13} className={isDark ? 'opacity-30' : 'opacity-90'} />
+      <span className="absolute left-[8px] flex items-center justify-center text-amber-500 transition-opacity duration-200 pointer-events-none">
+        <Sun size={17} className={isDark ? 'opacity-35' : 'opacity-90'} />
       </span>
-      <span className="absolute right-1.5 flex items-center justify-center text-blue-400 transition-opacity duration-200 pointer-events-none">
-        <Moon size={13} className={isDark ? 'opacity-90' : 'opacity-30'} />
+      <span className="absolute right-[8px] flex items-center justify-center text-indigo-400 transition-opacity duration-200 pointer-events-none">
+        <Moon size={17} className={isDark ? 'opacity-90' : 'opacity-35'} />
       </span>
 
       {/* Animated Sliding Thumb */}
       <span
-        className={`pointer-events-none inline-flex h-7 w-7 transform items-center justify-center rounded-full bg-white dark:bg-[#1E222D] shadow-md transition-all duration-300 ease-in-out ${
-          isDark ? 'translate-x-7 text-blue-400' : 'translate-x-0 text-amber-500'
+        className={`pointer-events-none inline-flex h-[30px] w-[30px] transform items-center justify-center rounded-full bg-white dark:bg-[#1E222D] shadow-md transition-all duration-300 ease-in-out ${
+          isDark ? 'translate-x-[38px] text-indigo-400' : 'translate-x-0 text-amber-500'
         }`}
       >
         {isDark ? (
-          <Moon size={14} className="fill-blue-400/20" />
+          <Moon size={18} className="fill-indigo-400/25 stroke-[2.2]" />
         ) : (
-          <Sun size={14} className="fill-amber-500/20" />
+          <Sun size={18} className="fill-amber-500/25 stroke-[2.2]" />
         )}
       </span>
     </button>
+  );
+};
+
+const PaginationControl = ({ currentPage, totalItems, pageSize = 20, onPageChange, lang = 'th' }) => {
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endIndex = Math.min(currentPage * pageSize, totalItems);
+
+  if (totalItems === 0) return null;
+
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 px-1 border-t border-slate-200/80 dark:border-[#2C2E33] text-xs">
+      <div className="text-slate-500 dark:text-[#A8B4C7] font-medium">
+        {lang === 'th'
+          ? `แสดง ${startIndex}-${endIndex} จากทั้งหมด ${totalItems} รายการ (หน้า ${currentPage}/${totalPages} • ${pageSize} รายการ/หน้า)`
+          : `Showing ${startIndex}-${endIndex} of ${totalItems} entries (Page ${currentPage}/${totalPages} • ${pageSize} items/page)`}
+      </div>
+
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <button
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-white dark:bg-[#2A3038] text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-[#323842] transition-all flex items-center gap-1 font-semibold active:scale-95"
+        >
+          <ChevronLeft size={14} />
+          <span>{lang === 'th' ? 'ก่อนหน้า' : 'Prev'}</span>
+        </button>
+
+        {pageNumbers.map(num => (
+          <button
+            key={num}
+            onClick={() => onPageChange(num)}
+            className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
+              currentPage === num
+                ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/25'
+                : 'border border-slate-200 dark:border-[#2C2E33] bg-white dark:bg-[#2A3038] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#323842]'
+            }`}
+          >
+            {num}
+          </button>
+        ))}
+
+        <button
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-white dark:bg-[#2A3038] text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-[#323842] transition-all flex items-center gap-1 font-semibold active:scale-95"
+        >
+          <span>{lang === 'th' ? 'ถัดไป' : 'Next'}</span>
+          <ChevronRight size={14} />
+        </button>
+      </div>
+    </div>
   );
 };
 
@@ -467,19 +659,22 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
       {/* 55% Left Scenery (Desktop) */}
       <div className="hidden lg:flex lg:w-[55%] relative flex-col justify-between p-12 text-white overflow-hidden bg-[#0A192F]">
         <img
-          src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1600&q=80"
+          src="/PSU-view.jpg"
           alt="PSU Campus"
-          className="absolute inset-0 w-full h-full object-cover z-0 opacity-80"
+          className="absolute inset-0 w-full h-full object-cover z-0 opacity-85"
         />
-        <div className="absolute inset-0 z-10" style={{ background: 'linear-gradient(180deg, rgba(10, 25, 47, 0.45) 0%, rgba(6, 18, 38, 0.92) 100%)' }} />
+        <div className="absolute inset-0 z-10" style={{ background: 'linear-gradient(180deg, rgba(10, 25, 47, 0.4) 0%, rgba(6, 18, 38, 0.9) 100%)' }} />
 
-        <div className="relative z-20 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
-            <GraduationCap size={26} className="text-white" />
+        <div className="relative z-20 flex items-center gap-5">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 p-2.5 shadow-xl flex-shrink-0">
+            <img src="/PSU_Logo.png" alt="PSU Logo" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
-          <div>
-            <div className="text-base font-bold tracking-wide">{t.universityName}</div>
-            <div className="text-xs opacity-80">PRINCE OF SONGKLA UNIVERSITY • {t.campusHatyai.toUpperCase()}</div>
+          <div className="flex items-center">
+            <img
+              src="/PSU-brand.png"
+              alt="PSU Brand"
+              className="h-36 sm:h-44 w-auto max-w-[340px] sm:max-w-[420px] object-contain object-left brightness-0 invert opacity-95 drop-shadow-lg"
+            />
           </div>
         </div>
 
@@ -494,9 +689,9 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
               : 'Track your cumulative credits, verify curriculum completion across all categories, and plan your graduation with confidence.'}
           </p>
           <div className="flex flex-wrap gap-4 mt-6 pt-5 border-t border-white/20 text-xs lg:text-sm">
-            <span>✓ {lang === 'th' ? 'ตรวจสอบ 4 หมวดวิชา' : '4 Category Audit'}</span>
-            <span>✓ {lang === 'th' ? 'แผนจำลองการลงทะเบียน' : 'Plan Simulation'}</span>
-            <span>✓ {lang === 'th' ? 'รายงาน PDF รับรองเบื้องต้น' : 'Official PDF Export'}</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-cyan-300" /> {lang === 'th' ? 'ตรวจสอบ 4 หมวดวิชา' : '4 Category Audit'}</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-cyan-300" /> {lang === 'th' ? 'แผนจำลองการลงทะเบียน' : 'Plan Simulation'}</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-cyan-300" /> {lang === 'th' ? 'รายงาน PDF รับรองเบื้องต้น' : 'Official PDF Export'}</span>
           </div>
         </div>
       </div>
@@ -515,8 +710,8 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
 
         <div className="w-full max-w-md">
           <div className="text-center mb-6 sm:mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 inline-flex items-center justify-center mb-3 shadow-sm">
-              <GraduationCap size={36} />
+            <div className="h-16 sm:h-20 max-w-[220px] inline-flex items-center justify-center mb-3">
+              <img src="/PSU-Logo-usual.png" alt="PSU Logo" className="w-full h-full object-contain dark:brightness-0 dark:invert drop-shadow-sm" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{t.loginTitle}</h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-[#A8B4C7] mt-1.5">{t.loginSubtitle}</p>
@@ -583,7 +778,40 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
             <span>{t.login365Btn}</span>
           </button>
 
-          <div className="mt-6 text-center">
+          {/* Quick Demo Role Switchers */}
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[#2C2E33]">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500 block text-center mb-2 font-medium">
+              {lang === 'th' ? '— หรือทดลองเข้าใช้งานทันทีด้วยบทบาทตัวอย่าง —' : '— Or explore immediately with demo roles —'}
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => onLogin('student')}
+                className="py-2.5 px-2 rounded-xl border border-slate-200 dark:border-[#2C2E33] hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all active:scale-95"
+              >
+                <GraduationCap size={14} className="text-blue-600 dark:text-blue-400" />
+                <span>{t.demoStudent}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onLogin('advisor')}
+                className="py-2.5 px-2 rounded-xl border border-slate-200 dark:border-[#2C2E33] hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all active:scale-95"
+              >
+                <Users size={14} className="text-purple-600 dark:text-purple-400" />
+                <span>{t.demoAdvisor}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onLogin('admin')}
+                className="py-2.5 px-2 rounded-xl border border-slate-200 dark:border-[#2C2E33] hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all active:scale-95"
+              >
+                <Settings size={14} className="text-amber-600 dark:text-amber-400" />
+                <span>{t.demoAdmin}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-5 text-center">
             <span
               onClick={() => onLogin('student')}
               className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 cursor-pointer inline-flex items-center gap-1 font-medium hover:underline"
@@ -597,135 +825,218 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
   );
 };
 
+/**
+ * คำนวณและประเมินสถานะความก้าวหน้าทางการศึกษาตามเป้าหมายสะสมรายชั้นปี
+ * Year 1: 25%, Year 2: 50%, Year 3: 75%, Year 4: 100%
+ */
+const calculateStudentStatus = (student) => {
+  const totalReq = student.creditsReq || student.totalCreditsRequired || 132;
+  const earned = student.creditsEarned || 0;
+  const year = student.year || 1;
+
+  const expectedCredits = Math.round(totalReq * (year * 0.25));
+  const creditGap = Math.max(0, expectedCredits - earned);
+
+  let status;
+  if (year >= 4) {
+    if (creditGap <= 6) status = 'normal';
+    else if (creditGap <= 12) status = 'warning';
+    else status = 'danger';
+  } else {
+    if (creditGap <= 9) status = 'normal';
+    else if (creditGap <= 18) status = 'warning';
+    else status = 'danger';
+  }
+
+  const statusText = status === 'normal' ? 'สถานะปกติ' : status === 'warning' ? 'มีความเสี่ยง' : 'ต้องติดตามด่วน';
+  const statusTextEn = status === 'normal' ? 'On-track' : status === 'warning' ? 'Warning' : 'Critical';
+
+  const badgeStyle = status === 'normal'
+    ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40'
+    : status === 'warning'
+    ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40'
+    : 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200/60 dark:border-red-800/40';
+
+  const progressPercent = Math.min(100, Math.round((earned / expectedCredits) * 100));
+
+  let explanationTh;
+  let explanationEn;
+  if (creditGap === 0) {
+    explanationTh = `ผ่านเกณฑ์เป้าหมายสะสมชั้นปีที่ ${year} ครบถ้วน (สะสมได้ ${earned} จากเป้าหมาย ${expectedCredits} หน่วยกิต)`;
+    explanationEn = `Fully achieved Year ${year} benchmark (${earned} of ${expectedCredits} cr.)`;
+  } else if (status === 'warning') {
+    explanationTh = `ตามหลังแผนการเรียน ${creditGap} หน่วยกิต (เป้าหมายชั้นปีที่ ${year} คือ ${expectedCredits} หน่วยกิต สะสมได้จริง ${earned} หน่วยกิต) แนะนำให้ลงทะเบียนเสริมในภาคการศึกษาถัดไป`;
+    explanationEn = `${creditGap} credits behind Year ${year} benchmark (Target: ${expectedCredits} cr., Actual: ${earned} cr.). Recommended to enroll in additional courses next term.`;
+  } else {
+    explanationTh = `ตามหลังแผนการเรียน ${creditGap} หน่วยกิต (เป้าหมายชั้นปีที่ ${year} คือ ${expectedCredits} หน่วยกิต สะสมได้จริง ${earned} หน่วยกิต) ขาดเกินเกณฑ์ที่กำหนด จำเป็นต้องเข้าพบอาจารย์ที่ปรึกษาเพื่อวางแผนการเรียนทันที`;
+    explanationEn = `${creditGap} credits behind Year ${year} benchmark (Target: ${expectedCredits} cr., Actual: ${earned} cr.). Exceeds allowed gap. Urgent academic consultation required.`;
+  }
+
+  return {
+    status,
+    statusText,
+    statusTextEn,
+    expectedCredits,
+    earnedCredits: earned,
+    creditGap,
+    year,
+    badgeStyle,
+    progressPercent,
+    explanationTh,
+    explanationEn
+  };
+};
+
+const getYearMilestones = (student) => {
+  const totalReq = student.creditsReq || student.totalCreditsRequired || 132;
+  const earned = student.creditsEarned || 0;
+  const currentYear = student.year || 1;
+
+  return [1, 2, 3, 4].map(yr => {
+    const target = Math.round(totalReq * (yr * 0.25));
+    const isCurrent = yr === currentYear;
+    const isPast = yr < currentYear;
+    const isPassedTarget = earned >= target;
+
+    return {
+      year: yr,
+      targetCredits: target,
+      isCurrent,
+      isPast,
+      isPassedTarget,
+      gap: Math.max(0, target - earned)
+    };
+  });
+};
+
 const DonutProgressChart = ({ studentData, lang = 'th', hoveredSegment, setHoveredSegment }) => {
   const totalReq = studentData.totalCreditsRequired || 132;
   const earnedTotal = studentData.creditsEarned;
   const C = 615.75; // 2 * PI * 98
+  const cx = 240;
+  const cy = 160;
+  const r = 98;
 
-  const catGen = studentData.categories.find(c => c.id === 'gen-ed') || { earned: 30, required: 30 };
-  const catReq = studentData.categories.find(c => c.id === 'core-req') || { earned: 54, required: 72 };
-  const catElec = studentData.categories.find(c => c.id === 'core-elec') || { earned: 12, required: 24 };
-  const catFree = studentData.categories.find(c => c.id === 'free-elec') || { earned: 3, required: 6 };
+  const categoriesConfig = [
+    { id: 'gen-ed', color: '#16A34A', nameTh: 'ศึกษาทั่วไป', nameEn: 'Gen-Ed' },
+    { id: 'core-req', color: '#2563EB', nameTh: 'เฉพาะบังคับ', nameEn: 'Core Req' },
+    { id: 'core-elec', color: '#9333EA', nameTh: 'เฉพาะเลือก', nameEn: 'Core Elec' },
+    { id: 'free-elec', color: '#EA580C', nameTh: 'เลือกเสรี', nameEn: 'Free Elec' }
+  ];
 
-  const dashGen = (catGen.earned / totalReq) * C;
-  const dashReq = (catReq.earned / totalReq) * C;
-  const dashElec = (catElec.earned / totalReq) * C;
-  const dashFree = (catFree.earned / totalReq) * C;
+  let accumulatedDeg = -90; // starts at 12 o'clock
 
-  const offGen = 0;
-  const offReq = -dashGen;
-  const offElec = -(dashGen + dashReq);
-  const offFree = -(dashGen + dashReq + dashElec);
+  const segments = categoriesConfig.map(cfg => {
+    const cat = studentData.categories.find(c => c.id === cfg.id) || { earned: 0, required: 0 };
+    const spanDeg = totalReq > 0 ? (cat.earned / totalReq) * 360 : 0;
+    const startDeg = accumulatedDeg;
+    const midDeg = accumulatedDeg + spanDeg / 2;
+    const endDeg = accumulatedDeg + spanDeg;
+    accumulatedDeg = endDeg;
+
+    const dash = totalReq > 0 ? (cat.earned / totalReq) * C : 0;
+    const offset = -(startDeg + 90) * (C / 360);
+
+    const rad = (midDeg * Math.PI) / 180;
+    const dotX = cx + r * Math.cos(rad);
+    const dotY = cy + r * Math.sin(rad);
+
+    const isRight = dotX >= cx;
+    const isTop = dotY < cy;
+
+    const boxWidth = 96;
+    const boxHeight = 36;
+
+    let elbowX = isRight ? dotX + 22 : dotX - 22;
+    let elbowY = isTop ? Math.max(34, dotY - 18) : Math.min(286, dotY + 18);
+    let lineEndX = isRight ? elbowX + 14 : elbowX - 14;
+
+    let boxX = isRight ? lineEndX + 4 : lineEndX - boxWidth - 4;
+    if (boxX < 6) {
+      boxX = 6;
+      lineEndX = boxX + boxWidth + 4;
+      elbowX = lineEndX - 14;
+    }
+    if (boxX + boxWidth > 474) {
+      boxX = 474 - boxWidth;
+      lineEndX = boxX - 4;
+      elbowX = lineEndX + 14;
+    }
+    const boxY = elbowY - boxHeight / 2;
+
+    return {
+      id: cfg.id,
+      nameTh: cfg.nameTh,
+      nameEn: cfg.nameEn,
+      color: cfg.color,
+      earned: cat.earned,
+      required: cat.required,
+      dash,
+      offset,
+      dotX,
+      dotY,
+      elbowX,
+      elbowY,
+      lineEndX,
+      boxX,
+      boxY,
+      boxWidth,
+      boxHeight
+    };
+  });
 
   const percentTotal = ((earnedTotal / totalReq) * 100).toFixed(1);
 
   return (
     <div className="w-full flex flex-col items-center">
-      <div className="relative w-full max-w-[480px] h-72 sm:h-80 flex items-center justify-center my-2">
-        <svg className="w-full h-full overflow-visible" viewBox="0 0 460 320" style={{ fontFamily: "'Sarabun', sans-serif" }}>
+      <div className="relative w-full max-w-[480px] h-72 sm:h-80 flex items-center justify-center my-2 select-none">
+        <svg className="w-full h-full overflow-visible" viewBox="0 0 480 320" style={{ fontFamily: "'Sarabun', sans-serif" }}>
           {/* Base Track */}
           <circle
-            cx="230"
-            cy="160"
-            r="98"
+            cx={cx}
+            cy={cy}
+            r={r}
             fill="transparent"
             stroke="currentColor"
             className="text-slate-200 dark:text-slate-700/60"
             strokeWidth="22"
             style={{
-              opacity: hoveredSegment ? 0.35 : 1,
+              opacity: hoveredSegment ? 0.3 : 1,
               transition: 'opacity 200ms ease'
             }}
           />
 
-          {/* Segment 1: Gen-ed (Emerald) */}
-          <circle
-            cx="230"
-            cy="160"
-            r="98"
-            fill="transparent"
-            stroke="#16A34A"
-            strokeWidth={hoveredSegment === 'gen-ed' ? 26 : 22}
-            strokeDasharray={`${dashGen} ${C}`}
-            strokeDashoffset={`${offGen}`}
-            transform="rotate(-90 230 160)"
-            style={{
-              cursor: 'pointer',
-              opacity: !hoveredSegment || hoveredSegment === 'gen-ed' ? 1 : 0.22,
-              filter: hoveredSegment === 'gen-ed' ? 'drop-shadow(0 4px 14px rgba(22, 163, 74, 0.45))' : 'none',
-              transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={() => setHoveredSegment('gen-ed')}
-            onMouseLeave={() => setHoveredSegment(null)}
-          />
-
-          {/* Segment 2: Core-req (Royal Blue) */}
-          <circle
-            cx="230"
-            cy="160"
-            r="98"
-            fill="transparent"
-            stroke="#2563EB"
-            strokeWidth={hoveredSegment === 'core-req' ? 26 : 22}
-            strokeDasharray={`${dashReq} ${C}`}
-            strokeDashoffset={`${offReq}`}
-            transform="rotate(-90 230 160)"
-            style={{
-              cursor: 'pointer',
-              opacity: !hoveredSegment || hoveredSegment === 'core-req' ? 1 : 0.22,
-              filter: hoveredSegment === 'core-req' ? 'drop-shadow(0 4px 14px rgba(37, 99, 235, 0.45))' : 'none',
-              transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={() => setHoveredSegment('core-req')}
-            onMouseLeave={() => setHoveredSegment(null)}
-          />
-
-          {/* Segment 3: Core-elec (Vivid Purple) */}
-          <circle
-            cx="230"
-            cy="160"
-            r="98"
-            fill="transparent"
-            stroke="#9333EA"
-            strokeWidth={hoveredSegment === 'core-elec' ? 26 : 22}
-            strokeDasharray={`${dashElec} ${C}`}
-            strokeDashoffset={`${offElec}`}
-            transform="rotate(-90 230 160)"
-            style={{
-              cursor: 'pointer',
-              opacity: !hoveredSegment || hoveredSegment === 'core-elec' ? 1 : 0.22,
-              filter: hoveredSegment === 'core-elec' ? 'drop-shadow(0 4px 14px rgba(147, 51, 234, 0.45))' : 'none',
-              transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={() => setHoveredSegment('core-elec')}
-            onMouseLeave={() => setHoveredSegment(null)}
-          />
-
-          {/* Segment 4: Free-elec (Warm Tangerine) */}
-          <circle
-            cx="230"
-            cy="160"
-            r="98"
-            fill="transparent"
-            stroke="#EA580C"
-            strokeWidth={hoveredSegment === 'free-elec' ? 26 : 22}
-            strokeDasharray={`${dashFree} ${C}`}
-            strokeDashoffset={`${offFree}`}
-            transform="rotate(-90 230 160)"
-            style={{
-              cursor: 'pointer',
-              opacity: !hoveredSegment || hoveredSegment === 'free-elec' ? 1 : 0.22,
-              filter: hoveredSegment === 'free-elec' ? 'drop-shadow(0 4px 14px rgba(234, 88, 12, 0.45))' : 'none',
-              transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={() => setHoveredSegment('free-elec')}
-            onMouseLeave={() => setHoveredSegment(null)}
-          />
+          {/* Dynamic Category Segments */}
+          {segments.map(seg => {
+            const isHovered = hoveredSegment === seg.id;
+            return (
+              <circle
+                key={seg.id}
+                cx={cx}
+                cy={cy}
+                r={r}
+                fill="transparent"
+                stroke={seg.color}
+                strokeWidth={isHovered ? 24 : 22}
+                strokeDasharray={`${seg.dash} ${C}`}
+                strokeDashoffset={`${seg.offset}`}
+                transform={`rotate(-90 ${cx} ${cy})`}
+                style={{
+                  cursor: 'pointer',
+                  opacity: !hoveredSegment || isHovered ? 1 : 0.22,
+                  filter: isHovered ? `drop-shadow(0 4px 12px ${seg.color}66)` : 'none',
+                  transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+                onMouseEnter={() => setHoveredSegment(seg.id)}
+                onMouseLeave={() => setHoveredSegment(null)}
+              />
+            );
+          })}
 
           {/* Center Typography */}
           <text
-            x="230"
-            y="150"
+            x={cx}
+            y={cy - 10}
             textAnchor="middle"
             dominantBaseline="central"
             className="fill-slate-900 dark:fill-white font-extrabold text-4xl tabular-nums pointer-events-none select-none"
@@ -733,8 +1044,8 @@ const DonutProgressChart = ({ studentData, lang = 'th', hoveredSegment, setHover
             {percentTotal}%
           </text>
           <text
-            x="230"
-            y="184"
+            x={cx}
+            y={cy + 24}
             textAnchor="middle"
             dominantBaseline="central"
             className="fill-slate-500 dark:fill-[#A8B4C7] font-semibold text-sm tabular-nums pointer-events-none select-none"
@@ -742,77 +1053,55 @@ const DonutProgressChart = ({ studentData, lang = 'th', hoveredSegment, setHover
             {earnedTotal} / {totalReq} {lang === 'th' ? 'หน่วยกิต' : 'Credits'}
           </text>
 
-          {/* Leader Line Callouts: Visible only when hovered */}
-          <g
-            style={{
-              opacity: hoveredSegment === 'gen-ed' ? 1 : 0,
-              transform: hoveredSegment === 'gen-ed' ? 'none' : 'translateX(6px)',
-              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: hoveredSegment === 'gen-ed' ? 'auto' : 'none'
-            }}
-          >
-            <circle cx="310" cy="104" r="5" fill="#16A34A" />
-            <polyline points="310,104 346,80 366,80" fill="none" stroke="#16A34A" strokeWidth="2.2" />
-            <rect x="368" y="62" width="88" height="36" rx="8" className="fill-white dark:fill-[#191C24] stroke-[#16A34A]" strokeWidth="1.4" />
-            <text x="376" y="76" fill="#16A34A" fontSize="11" fontWeight="700">{lang === 'th' ? 'ศึกษาทั่วไป' : 'Gen-Ed'}</text>
-            <text x="376" y="90" className="fill-slate-800 dark:fill-slate-100 font-semibold text-[10px] tabular-nums">{catGen.earned} / {catGen.required} {lang === 'th' ? 'นก.' : 'cr.'}</text>
-          </g>
-
-          <g
-            style={{
-              opacity: hoveredSegment === 'core-req' ? 1 : 0,
-              transform: hoveredSegment === 'core-req' ? 'none' : 'translateX(6px)',
-              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: hoveredSegment === 'core-req' ? 'auto' : 'none'
-            }}
-          >
-            <circle cx="298" cy="228" r="5" fill="#2563EB" />
-            <polyline points="298,228 334,248 354,248" fill="none" stroke="#2563EB" strokeWidth="2.2" />
-            <rect x="356" y="230" width="94" height="36" rx="8" className="fill-white dark:fill-[#191C24] stroke-[#2563EB]" strokeWidth="1.4" />
-            <text x="364" y="244" fill="#2563EB" fontSize="11" fontWeight="700">{lang === 'th' ? 'เฉพาะบังคับ' : 'Core Req'}</text>
-            <text x="364" y="258" className="fill-slate-800 dark:fill-slate-100 font-semibold text-[10px] tabular-nums">{catReq.earned} / {catReq.required} {lang === 'th' ? 'นก.' : 'cr.'}</text>
-          </g>
-
-          <g
-            style={{
-              opacity: hoveredSegment === 'core-elec' ? 1 : 0,
-              transform: hoveredSegment === 'core-elec' ? 'none' : 'translateX(-6px)',
-              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: hoveredSegment === 'core-elec' ? 'auto' : 'none'
-            }}
-          >
-            <circle cx="156" cy="222" r="5" fill="#9333EA" />
-            <polyline points="156,222 120,245 100,245" fill="none" stroke="#9333EA" strokeWidth="2.2" />
-            <rect x="10" y="227" width="88" height="36" rx="8" className="fill-white dark:fill-[#191C24] stroke-[#9333EA]" strokeWidth="1.4" />
-            <text x="18" y="241" fill="#9333EA" fontSize="11" fontWeight="700">{lang === 'th' ? 'เฉพาะเลือก' : 'Elective'}</text>
-            <text x="18" y="255" className="fill-slate-800 dark:fill-slate-100 font-semibold text-[10px] tabular-nums">{catElec.earned} / {catElec.required} {lang === 'th' ? 'นก.' : 'cr.'}</text>
-          </g>
-
-          <g
-            style={{
-              opacity: hoveredSegment === 'free-elec' ? 1 : 0,
-              transform: hoveredSegment === 'free-elec' ? 'none' : 'translateX(-6px)',
-              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: hoveredSegment === 'free-elec' ? 'auto' : 'none'
-            }}
-          >
-            <circle cx="134" cy="173" r="5" fill="#EA580C" />
-            <polyline points="134,173 100,155 80,155" fill="none" stroke="#EA580C" strokeWidth="2.2" />
-            <rect x="6" y="137" width="72" height="36" rx="8" className="fill-white dark:fill-[#191C24] stroke-[#EA580C]" strokeWidth="1.4" />
-            <text x="14" y="151" fill="#EA580C" fontSize="11" fontWeight="700">{lang === 'th' ? 'เลือกเสรี' : 'Free Elec'}</text>
-            <text x="14" y="165" className="fill-slate-800 dark:fill-slate-100 font-semibold text-[10px] tabular-nums">{catFree.earned} / {catFree.required} {lang === 'th' ? 'นก.' : 'cr.'}</text>
-          </g>
+          {/* Dynamic Callouts for Hovered Segment */}
+          {segments.map(seg => {
+            const isHovered = hoveredSegment === seg.id;
+            return (
+              <g
+                key={seg.id}
+                style={{
+                  opacity: isHovered ? 1 : 0,
+                  transform: isHovered ? 'scale(1)' : 'scale(0.96)',
+                  transformOrigin: `${seg.dotX}px ${seg.dotY}px`,
+                  transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                  pointerEvents: isHovered ? 'auto' : 'none'
+                }}
+              >
+                <circle cx={seg.dotX} cy={seg.dotY} r="4.5" fill={seg.color} stroke="#ffffff" strokeWidth="1.5" />
+                <polyline
+                  points={`${seg.dotX},${seg.dotY} ${seg.elbowX},${seg.elbowY} ${seg.lineEndX},${seg.elbowY}`}
+                  fill="none"
+                  stroke={seg.color}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <rect
+                  x={seg.boxX}
+                  y={seg.boxY}
+                  width={seg.boxWidth}
+                  height={seg.boxHeight}
+                  rx="8"
+                  className="fill-white dark:fill-[#191C24]"
+                  stroke={seg.color}
+                  strokeWidth="1.5"
+                  style={{ filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.12))' }}
+                />
+                <text x={seg.boxX + 8} y={seg.boxY + 14} fill={seg.color} fontSize="11" fontWeight="700">
+                  {lang === 'th' ? seg.nameTh : seg.nameEn}
+                </text>
+                <text x={seg.boxX + 8} y={seg.boxY + 28} className="fill-slate-800 dark:fill-slate-100 font-bold text-[11px] tabular-nums">
+                  {seg.earned} / {seg.required} {lang === 'th' ? 'หน่วยกิต' : 'cr.'}
+                </text>
+              </g>
+            );
+          })}
         </svg>
       </div>
 
       {/* Color Legend with interactive hover */}
       <div className="grid grid-cols-2 gap-2 w-full text-left text-xs mb-3 p-2.5 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33]">
-        {[
-          { id: 'gen-ed', color: '#16A34A', labelTh: `ศึกษาทั่วไป (${catGen.earned} นก.)`, labelEn: `Gen-Ed (${catGen.earned} cr.)` },
-          { id: 'core-req', color: '#2563EB', labelTh: `เฉพาะบังคับ (${catReq.earned} นก.)`, labelEn: `Core Req (${catReq.earned} cr.)` },
-          { id: 'core-elec', color: '#9333EA', labelTh: `เฉพาะเลือก (${catElec.earned} นก.)`, labelEn: `Elective (${catElec.earned} cr.)` },
-          { id: 'free-elec', color: '#EA580C', labelTh: `เลือกเสรี (${catFree.earned} นก.)`, labelEn: `Free Elec (${catFree.earned} cr.)` }
-        ].map(item => {
+        {segments.map(item => {
           const isHovered = hoveredSegment === item.id;
           const isOtherHovered = hoveredSegment && hoveredSegment !== item.id;
           return (
@@ -835,7 +1124,7 @@ const DonutProgressChart = ({ studentData, lang = 'th', hoveredSegment, setHover
                 }}
               />
               <span className="truncate font-medium text-slate-800 dark:text-slate-100">
-                {lang === 'th' ? item.labelTh : item.labelEn}
+                {lang === 'th' ? `${item.nameTh} (${item.earned} หน่วยกิต)` : `${item.nameEn} (${item.earned} cr.)`}
               </span>
             </div>
           );
@@ -917,30 +1206,40 @@ const CategoryProgressList = ({ studentData, lang = 'th', onCategoryClick }) => 
 export default function App() {
   const [theme, setTheme] = useState('light');
   const [lang, setLang] = useState('th');
-  const [currentRoute, setCurrentRoute] = useState('/student');
+  const [currentRoute, setCurrentRoute] = useState('/login');
   const [currentRole, setCurrentRole] = useState('student');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
-  const [isTourOpen, setIsTourOpen] = useState(false);
   const [activeCategoryTab, setActiveCategoryTab] = useState('core-req');
   const [searchCatalogQuery, setSearchCatalogQuery] = useState('');
   const [selectedSubView, setSelectedSubView] = useState('all');
   const [onlyNotTaken, setOnlyNotTaken] = useState(false);
+  const [passedCatCurrentPage, setPassedCatCurrentPage] = useState(1);
+  const [studentCurrentTermPage, setStudentCurrentTermPage] = useState(1);
   const [selectedCourseDetail, setSelectedCourseDetail] = useState(null);
   const [hoveredSegment, setHoveredSegment] = useState(null);
   const [statsPeriod, setStatsPeriod] = useState('daily');
 
-  // History filters
+  // History filters & Pagination (20 per page)
   const [historyTermFilter, setHistoryTermFilter] = useState('all');
   const [historyYearFilter, setHistoryYearFilter] = useState('all');
   const [historySearchQuery, setHistorySearchQuery] = useState('');
+  const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
 
   // Selected student and admin user inspection
   const [selectedStudentId, setSelectedStudentId] = useState('6710110001');
   const [selectedAdminUser, setSelectedAdminUser] = useState(null);
   const [advisorConsultations, setAdvisorConsultations] = useState(MOCK.advisor.consultations);
   const [newConsultationText, setNewConsultationText] = useState('');
+
+  // Advisor Advisees Search & Pagination (20 per page)
+  const [advisorSearchQuery, setAdvisorSearchQuery] = useState('');
+  const [advisorCurrentPage, setAdvisorCurrentPage] = useState(1);
+
+  // Admin Users Search & Pagination (20 per page)
+  const [adminSearchQuery, setAdminSearchQuery] = useState('');
+  const [adminCurrentPage, setAdminCurrentPage] = useState(1);
 
   const t = I18N[lang];
 
@@ -1012,22 +1311,227 @@ export default function App() {
     };
   }, [selectedStudentId]);
 
+  const startTour = useCallback(() => {
+    const isThai = lang === 'th';
+    let steps;
+
+    if (currentRoute === '/student') {
+      steps = [
+        {
+          element: '#tour-student-header',
+          popover: {
+            title: isThai ? 'ข้อมูลนักศึกษา & ผลการเรียน' : 'Student Profile & Academic Summary',
+            description: isThai
+              ? 'แสดงข้อมูลชื่อ-สกุล รหัสนักศึกษา หลักสูตร เกรดเฉลี่ยสะสม (GPA) อาจารย์ที่ปรึกษา และปุ่มส่งออกรายงาน PDF สำหรับใช้ยื่นคำร้อง'
+              : 'Displays student profile, curriculum, cumulative GPA, academic advisor, and official PDF export button.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-donut-progress',
+          popover: {
+            title: isThai ? 'ความคืบหน้ารวมตามหลักสูตร' : 'Overall Degree Progress',
+            description: isThai
+              ? 'แผนภูมิวงแหวนแสดงสัดส่วนหน่วยกิตสะสมที่ผ่านแล้ว พร้อมการคาดการณ์ภาคการศึกษาที่จะสำเร็จการศึกษาตามแผน'
+              : 'Interactive donut chart showing earned vs required credits and graduation timeline projection.',
+            side: 'right',
+            align: 'center'
+          }
+        },
+        {
+          element: '#tour-category-progress',
+          popover: {
+            title: isThai ? 'หน่วยกิตแยกตาม 4 หมวดวิชา' : 'Credits by 4 Categories',
+            description: isThai
+              ? 'ตรวจสอบหน่วยกิตในแต่ละหมวด (ศึกษาทั่วไป, เฉพาะบังคับ, เฉพาะเลือก, เลือกเสรี) คลิกที่การ์ดเพื่อดูรายวิชาที่ต้องเรียน'
+              : 'Detailed breakdown by 4 categories. Click any category card to drill down into specific course requirements.',
+            side: 'left',
+            align: 'center'
+          }
+        },
+        {
+          element: '#tour-current-enrollment',
+          popover: {
+            title: isThai ? 'รายวิชาที่ลงทะเบียนในภาคการศึกษาปัจจุบัน' : 'Current Term Enrollment',
+            description: isThai
+              ? 'รายการวิชาที่กำลังศึกษาในภาค 2/2569 จำนวนหน่วยกิต กลุ่มเรียน และสถานะการลงทะเบียน'
+              : 'View courses enrolled in Term 2/2026 along with credits, sections, and schedule.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/student/categories') {
+      steps = [
+        {
+          element: '#tour-search-catalog',
+          popover: {
+            title: isThai ? 'ค้นหาและกรองรายวิชา' : 'Search & Filter Courses',
+            description: isThai
+              ? 'ค้นหาตามรหัสวิชา ชื่อวิชา และสลับหมวดหมู่วิชา 4 หมวดได้อย่างสะดวกรวดเร็ว'
+              : 'Search courses by code, title, and instantly filter across 4 curriculum categories.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-catalog-grid',
+          popover: {
+            title: isThai ? 'รายวิชาที่เปิดรับและจำนวนที่นั่ง' : 'Available Course Catalog',
+            description: isThai
+              ? 'แสดงรายวิชาที่เปิดสอน ตารางเรียน ผู้สอน และแถบที่นั่งว่างแบบเรียลไทม์ คลิกเพื่อดูรายละเอียดวิชา'
+              : 'Explore open courses, schedules, instructors, and real-time seat availability meters.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/advisor/students') {
+      steps = [
+        {
+          element: '#tour-advisor-students',
+          popover: {
+            title: isThai ? 'รายชื่อนักศึกษาในความดูแล' : 'Advisees Management Directory',
+            description: isThai
+              ? 'ตรวจสอบสถานะความก้าวหน้าทางการศึกษาของนักศึกษา (ปกติ, เสี่ยง, ต้องติดตามด่วน) และเข้าดูรายละเอียดผลการเรียนรายบุคคล'
+              : 'Monitor advisees academic progress statuses (On-track, Warning, Critical) and drill into individual student profiles.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else if (currentRoute === '/admin/stats') {
+      steps = [
+        {
+          element: '#tour-admin-stats',
+          popover: {
+            title: isThai ? 'สถิติการใช้งานระบบภาพรวม' : 'System-wide Telemetry Analytics',
+            description: isThai
+              ? 'สถิติจำนวนผู้ใช้งาน การตรวจสอบหน่วยกิต และการส่งออกรายงาน PDF แยกตามวิทยาเขตและช่วงเวลา'
+              : 'Real-time telemetry of active users, audit checks, and PDF exports across 5 PSU campuses.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ];
+    } else {
+      steps = [
+        {
+          element: '#tour-navigation-menu',
+          popover: {
+            title: isThai ? 'เมนูนำทางหลัก' : 'Navigation Menu',
+            description: isThai
+              ? 'เข้าถึงฟังก์ชันต่างๆ ของระบบ PSU Credit Checker ได้อย่างสะดวกรวดเร็ว'
+              : 'Access all features and modules across student, advisor, and admin portals.',
+            side: 'right',
+            align: 'center'
+          }
+        }
+      ];
+    }
+
+    const driverObj = driver({
+      showProgress: true,
+      animate: true,
+      allowClose: true,
+      overlayOpacity: 0.7,
+      stagePadding: 8,
+      nextBtnText: isThai ? 'ถัดไป →' : 'Next →',
+      prevBtnText: isThai ? '← ย้อนกลับ' : '← Previous',
+      doneBtnText: isThai ? 'เสร็จสิ้น ✓' : 'Done ✓',
+      steps: steps
+    });
+
+    driverObj.drive();
+  }, [currentRoute, lang]);
+
+  const currentUserProfile = useMemo(() => {
+    if (currentRole === 'advisor') {
+      return {
+        name: lang === 'th' ? MOCK.advisor.name : MOCK.advisor.nameEn,
+        subtitle: lang === 'th' ? 'อาจารย์ที่ปรึกษา' : 'Academic Advisor',
+        campus: 'วิทยาเขตหาดใหญ่',
+        campusEn: 'Hat Yai Campus',
+        campusTag: lang === 'th' ? 'วิทยาเขตหาดใหญ่' : 'Hat Yai Campus',
+        roleBadge: t.roleAdvisor,
+        initials: lang === 'th' ? 'วท' : 'WT',
+        avatarBg: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40'
+      };
+    }
+    if (currentRole === 'admin') {
+      return {
+        name: lang === 'th' ? 'นายสมศักดิ์ แอดมิน' : 'Mr. Somsak Admin',
+        subtitle: 'somsak.admin@psu.ac.th',
+        campus: 'วิทยาเขตหาดใหญ่',
+        campusEn: 'Hat Yai Campus',
+        campusTag: lang === 'th' ? 'วิทยาเขตหาดใหญ่ (วิทยาเขตของคุณ)' : 'Hat Yai Campus (Your Campus)',
+        roleBadge: t.roleAdmin,
+        initials: lang === 'th' ? 'สอ' : 'SA',
+        avatarBg: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40'
+      };
+    }
+    return {
+      name: lang === 'th' ? MOCK.student.name : MOCK.student.nameEn,
+      subtitle: MOCK.student.id,
+      campus: lang === 'th' ? MOCK.student.campus : MOCK.student.campusEn,
+      campusTag: lang === 'th' ? MOCK.student.campus : MOCK.student.campusEn,
+      roleBadge: t.roleStudent,
+      initials: lang === 'th' ? 'สช' : 'SJ',
+      avatarBg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40'
+    };
+  }, [currentRole, lang, t]);
+
+  const handleOpenCourseDetail = useCallback((course) => {
+    if (!course) return;
+    const code = typeof course === 'string' ? course : course.code;
+
+    const foundInCatalog = MOCK.availableCatalog.find(c => c.code === code);
+    const foundInRemaining = MOCK.student.remainingCourses.find(c => c.code === code);
+    const foundInPassed = MOCK.student.passedCourses.find(c => c.code === code);
+    const foundInCurrent = MOCK.student.currentSemesterCourses.find(c => c.code === code);
+
+    const merged = {
+      ...(typeof course === 'object' ? course : {}),
+      ...(foundInPassed || {}),
+      ...(foundInCurrent || {}),
+      ...(foundInRemaining || {}),
+      ...(foundInCatalog || {})
+    };
+
+    setSelectedCourseDetail({
+      code: code,
+      nameTh: merged.nameTh || code,
+      nameEn: merged.nameEn || code,
+      credits: merged.credits || 3,
+      category: merged.category || 'core-req',
+      seatsMax: merged.seatsMax || 60,
+      seatsAvailable: merged.seatsAvailable !== undefined ? merged.seatsAvailable : 12,
+      instructor: merged.instructor || (lang === 'th' ? 'อาจารย์ประจำภาควิชาวิทยาการคอมพิวเตอร์' : 'Computer Science Faculty Staff'),
+      instructorEn: merged.instructorEn || 'Computer Science Faculty Staff',
+      schedule: merged.schedule || (lang === 'th' ? 'ตามประกาศตารางเรียนภาควิชา' : 'To be announced by Department'),
+      scheduleEn: merged.scheduleEn || 'To be announced by Department',
+      description: merged.description || (lang === 'th' ? `ศึกษาและฝึกปฏิบัติการในรายวิชา ${code} ตามโครงสร้างหลักสูตรวิทยาศาสตรบัณฑิต มหาวิทยาลัยสงขลานครินทร์` : `Course study and laboratory practices for ${code} in Bachelor of Science program, Prince of Songkla University.`),
+      descriptionEn: merged.descriptionEn || `Course study and laboratory practices for ${code} in Bachelor of Science program, Prince of Songkla University.`,
+      prerequisite: merged.prerequisite || (merged.prereq ? merged.prereq : '-')
+    });
+  }, [lang]);
+
   const studentMenus = [
     { route: '/student', label: t.menuOverview, icon: LayoutDashboard },
     { route: '/student/categories', label: t.menuCategories, icon: List },
     { route: '/student/history', label: t.menuHistory, icon: HistoryIcon },
-    { route: '#tour', label: t.menuTour, icon: HelpCircle, action: () => setIsTourOpen(true) }
+    { route: '#tour', label: t.menuTour, icon: HelpCircle, action: () => startTour() }
   ];
 
   const advisorMenus = [
     { route: '/advisor/students', label: t.menuAdvisees, icon: Users },
     { route: '/advisor/department', label: t.menuDept, icon: BarChart3 },
-    { route: '#tour', label: t.menuTour, icon: HelpCircle, action: () => setIsTourOpen(true) }
+    { route: '#tour', label: t.menuTour, icon: HelpCircle, action: () => startTour() }
   ];
 
   const adminMenus = [
     { route: '/admin/stats', label: t.menuAdminStats, icon: LayoutDashboard },
-    { route: '/admin/curriculums', label: t.menuAdminCurriculums, icon: GraduationCap },
     { route: '/admin/users', label: t.menuAdminUsers, icon: UserCog },
     { route: '/admin/logs', label: t.menuAdminLogs, icon: ScrollText }
   ];
@@ -1073,9 +1577,11 @@ export default function App() {
       >
         <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200 dark:border-[#2C2E33]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-extrabold text-sm">
-              PSU
-            </div>
+            <img
+              src="/PSU-Logo-usual.png"
+              alt="PSU Logo"
+              className="h-8 w-auto object-contain dark:brightness-0 dark:invert"
+            />
             <div>
               <div className="text-sm font-bold text-blue-600 dark:text-blue-400">Credit Checker</div>
               <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7]">{t.universityName}</div>
@@ -1108,6 +1614,31 @@ export default function App() {
         </nav>
 
         <div className="p-3 border-t border-slate-200 dark:border-[#2C2E33]">
+          {/* User Profile Card */}
+          <div className="p-3 mb-2 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${currentUserProfile.avatarBg}`}>
+                {currentUserProfile.initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-slate-800 dark:text-white truncate">
+                  {currentUserProfile.name}
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] truncate">
+                  {currentUserProfile.subtitle}
+                </div>
+              </div>
+            </div>
+
+            {/* Campus Badge */}
+            {currentUserProfile.campusTag && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40 text-[11px] font-semibold">
+                <Building2 size={13} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <span className="truncate">{currentUserProfile.campusTag}</span>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => setCurrentRoute('/login')}
             className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-950/20"
@@ -1126,13 +1657,15 @@ export default function App() {
       >
         <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200 dark:border-[#2C2E33]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-base flex-shrink-0 shadow-sm">
-              PSU
-            </div>
+            <img
+              src="/PSU-Logo-usual.png"
+              alt="PSU Logo"
+              className="h-9 w-auto object-contain dark:brightness-0 dark:invert"
+            />
             {!isCollapsed && (
               <div className="overflow-hidden whitespace-nowrap">
                 <div className="text-sm font-bold text-blue-600 dark:text-blue-400">Credit Checker</div>
-                <div className="text-xs text-slate-500 dark:text-[#A8B4C7]">ม.สงขลานครินทร์</div>
+                <div className="text-xs text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? 'ม.สงขลานครินทร์' : 'Prince of Songkla Univ.'}</div>
               </div>
             )}
           </div>
@@ -1163,6 +1696,39 @@ export default function App() {
         </nav>
 
         <div className="p-3 border-t border-slate-200 dark:border-[#2C2E33]">
+          {/* User Profile Card */}
+          {!isCollapsed ? (
+            <div className="p-2.5 mb-2.5 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${currentUserProfile.avatarBg}`}>
+                  {currentUserProfile.initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-slate-800 dark:text-white truncate">
+                    {currentUserProfile.name}
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] truncate">
+                    {currentUserProfile.subtitle}
+                  </div>
+                </div>
+              </div>
+
+              {/* Campus Badge */}
+              {currentUserProfile.campusTag && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40 text-[11px] font-semibold">
+                  <Building2 size={13} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                  <span className="truncate">{currentUserProfile.campusTag}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex justify-center mb-2.5" title={`${currentUserProfile.name} (${currentUserProfile.subtitle}) • ${currentUserProfile.campusTag || ''}`}>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${currentUserProfile.avatarBg}`}>
+                {currentUserProfile.initials}
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => setCurrentRoute('/login')}
             className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-950/20 ${
@@ -1210,20 +1776,14 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setIsTourOpen(true)}
+              onClick={() => startTour()}
               className="w-9 h-9 rounded-full border border-slate-200 dark:border-[#2C2E33] bg-transparent text-slate-500 dark:text-[#A8B4C7] hover:text-slate-900 dark:hover:text-white flex items-center justify-center"
               title={t.menuTour}
             >
               <HelpCircle size={17} />
             </button>
 
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-full border border-slate-200 dark:border-[#2C2E33] bg-transparent text-slate-800 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#2A3038]"
-              title={theme === 'dark' ? t.toggleThemeLight : t.toggleThemeDark}
-            >
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
+            <ThemeSwitch theme={theme} toggleTheme={toggleTheme} lang={lang} />
           </div>
         </header>
 
@@ -1233,7 +1793,7 @@ export default function App() {
           {currentRoute === '/student' && (
             <div className="flex flex-col gap-5 sm:gap-6">
               {/* Student Header Card */}
-              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div id="tour-student-header" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xl flex-shrink-0">
                     {lang === 'th' ? 'สช' : 'SJ'}
@@ -1268,7 +1828,7 @@ export default function App() {
 
               {/* Donut Chart & Category Progress Summary */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col items-center justify-between">
+                <div id="tour-donut-progress" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col items-center justify-between">
                   <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white self-start">
                     {t.overallProgress}
                   </h3>
@@ -1285,7 +1845,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
+                <div id="tour-category-progress" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
                   <CategoryProgressList
                     studentData={MOCK.student}
                     lang={lang}
@@ -1298,41 +1858,70 @@ export default function App() {
               </div>
 
               {/* Current Term Registered Courses */}
-              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-                <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white mb-3">
-                  {t.currentSemesterCourses}
-                </h3>
-                <div className="w-full overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                        <th className="p-3">{t.courseCode}</th>
-                        <th className="p-3">{t.courseName}</th>
-                        <th className="p-3">{t.credits}</th>
-                        <th className="p-3">{t.category}</th>
-                        <th className="p-3">{t.time}</th>
-                        <th className="p-3">{t.status}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {MOCK.student.currentSemesterCourses.map(c => (
-                        <tr key={c.code} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
-                          <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
-                          <td className="p-3 font-medium text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
-                          <td className="p-3 tabular-nums">{c.credits}</td>
-                          <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
-                          <td className="p-3 text-xs text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? c.time : c.timeEn}</td>
-                          <td className="p-3">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
-                              {lang === 'th' ? c.status : c.statusEn}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              {(() => {
+                const currentCourses = MOCK.student.currentSemesterCourses;
+                const pageSize = 5;
+                const totalPages = Math.ceil(currentCourses.length / pageSize) || 1;
+                const validPage = Math.min(studentCurrentTermPage, totalPages);
+                const pagedCourses = currentCourses.slice((validPage - 1) * pageSize, validPage * pageSize);
+
+                return (
+                  <div id="tour-current-enrollment" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+                        {t.currentSemesterCourses}
+                      </h3>
+                      <span className="text-xs text-slate-500 dark:text-[#A8B4C7] font-medium">
+                        {lang === 'th' ? `รวม ${currentCourses.reduce((sum, c) => sum + c.credits, 0)} หน่วยกิต` : `Total ${currentCourses.reduce((sum, c) => sum + c.credits, 0)} Credits`}
+                      </span>
+                    </div>
+
+                    <div className="w-full overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-sm">
+                        <thead>
+                          <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                            <th className="p-3">{t.courseCode}</th>
+                            <th className="p-3">{t.courseName}</th>
+                            <th className="p-3">{t.credits}</th>
+                            <th className="p-3">{t.category}</th>
+                            <th className="p-3">{t.time}</th>
+                            <th className="p-3">{t.status}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pagedCourses.map(c => (
+                            <tr
+                              key={c.code}
+                              onClick={() => handleOpenCourseDetail(c)}
+                              className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
+                            >
+                              <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
+                              <td className="p-3 font-medium text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
+                              <td className="p-3 tabular-nums">{c.credits}</td>
+                              <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
+                              <td className="p-3 text-xs text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? c.time : c.timeEn}</td>
+                              <td className="p-3">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
+                                  {lang === 'th' ? c.status : c.statusEn}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination Control */}
+                    <PaginationControl
+                      currentPage={validPage}
+                      totalItems={currentCourses.length}
+                      pageSize={pageSize}
+                      onPageChange={setStudentCurrentTermPage}
+                      lang={lang}
+                    />
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -1358,7 +1947,10 @@ export default function App() {
                 {/* Category Navigation Tabs */}
                 <div className="flex gap-2 border-b border-slate-200 dark:border-[#2C2E33] overflow-x-auto pb-1">
                   <button
-                    onClick={() => setActiveCategoryTab('all-cats')}
+                    onClick={() => {
+                      setActiveCategoryTab('all-cats');
+                      setPassedCatCurrentPage(1);
+                    }}
                     className={`py-2 px-4 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all border-b-2 ${
                       activeCategoryTab === 'all-cats'
                         ? 'border-blue-600 text-blue-600 dark:text-blue-400'
@@ -1373,7 +1965,10 @@ export default function App() {
                     return (
                       <button
                         key={cat.id}
-                        onClick={() => setActiveCategoryTab(cat.id)}
+                        onClick={() => {
+                          setActiveCategoryTab(cat.id);
+                          setPassedCatCurrentPage(1);
+                        }}
                         style={{
                           borderColor: isActive ? theme.color : 'transparent',
                           color: isActive ? theme.color : undefined
@@ -1430,14 +2025,17 @@ export default function App() {
                 })()}
 
                 {/* Filter and Search Controls */}
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+                <div id="tour-search-catalog" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-4 shadow-sm flex flex-col gap-3">
                   <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                     <div className="relative flex-1">
                       <input
                         type="text"
                         placeholder={t.searchPlaceholder}
                         value={searchCatalogQuery}
-                        onChange={(e) => setSearchCatalogQuery(e.target.value)}
+                        onChange={(e) => {
+                          setSearchCatalogQuery(e.target.value);
+                          setPassedCatCurrentPage(1);
+                        }}
                         className="w-full py-2.5 pl-9 pr-4 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <Search size={16} className="absolute left-3 top-3 text-slate-400" />
@@ -1446,7 +2044,10 @@ export default function App() {
                       <input
                         type="checkbox"
                         checked={onlyNotTaken}
-                        onChange={(e) => setOnlyNotTaken(e.target.checked)}
+                        onChange={(e) => {
+                          setOnlyNotTaken(e.target.checked);
+                          setPassedCatCurrentPage(1);
+                        }}
                         className="w-4 h-4 rounded text-blue-600 accent-blue-600"
                       />
                       <span>{lang === 'th' ? 'เฉพาะวิชาที่ยังไม่เคยลง' : 'Only not taken'}</span>
@@ -1465,7 +2066,10 @@ export default function App() {
                     ].map(pill => (
                       <button
                         key={pill.id}
-                        onClick={() => setSelectedSubView(pill.id)}
+                        onClick={() => {
+                          setSelectedSubView(pill.id);
+                          setPassedCatCurrentPage(1);
+                        }}
                         className={`py-1 px-3 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
                           selectedSubView === pill.id
                             ? 'bg-blue-600 text-white border-blue-600'
@@ -1487,27 +2091,45 @@ export default function App() {
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                       {remainingInCat.map(rc => (
-                        <div key={rc.code} className="p-4 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] flex flex-col justify-between gap-3">
+                        <div
+                          key={rc.code}
+                          onClick={() => handleOpenCourseDetail(rc)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleOpenCourseDetail(rc); }}
+                          className="group p-4 rounded-2xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] hover:bg-white dark:hover:bg-[#222736] flex flex-col justify-between gap-3 cursor-pointer hover:border-blue-500 hover:shadow-md hover:ring-2 hover:ring-blue-500/20 active:scale-[0.98] transition-all"
+                        >
                           <div>
                             <div className="flex justify-between items-start gap-2">
-                              <span className="tabular-nums font-bold text-blue-600 dark:text-blue-400 text-sm">{rc.code}</span>
+                              <span className="tabular-nums font-bold text-blue-600 dark:text-blue-400 text-sm group-hover:underline flex items-center gap-1">
+                                {rc.code}
+                              </span>
                               <CategoryBadge categoryId={rc.category} lang={lang} />
                             </div>
-                            <div className="font-semibold text-xs sm:text-sm mt-1 text-slate-800 dark:text-white">{lang === 'th' ? rc.nameTh : rc.nameEn}</div>
-                            <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] mt-1">
-                              {lang === 'th' ? 'วิชาบังคับก่อน' : 'Prerequisite'}: <strong>{rc.prerequisite}</strong>
+                            <div className="font-semibold text-xs sm:text-sm mt-1.5 text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              {lang === 'th' ? rc.nameTh : rc.nameEn}
+                            </div>
+                            <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] mt-1.5 flex items-center gap-1">
+                              <span>{lang === 'th' ? 'วิชาบังคับก่อน:' : 'Prerequisite:'}</span>
+                              <strong className="text-slate-700 dark:text-slate-300 font-medium">{rc.prerequisite}</strong>
                             </div>
                           </div>
-                          <div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-200/70 dark:border-[#323846]">
                             {rc.availableNextTerm ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 {lang === 'th' ? 'เปิดสอนภาค 2/2569' : 'Open 2/2026'}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-500">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-200/70 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                                 {lang === 'th' ? 'ยังไม่เปิดสอน' : 'Not open'}
                               </span>
                             )}
+                            <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium flex items-center gap-0.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                              <span>{lang === 'th' ? 'ดูรายละเอียด' : 'View'}</span>
+                              <ChevronRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -1517,7 +2139,7 @@ export default function App() {
 
                 {/* Section 2: Open Courses with Dynamic Seat Meter */}
                 {(selectedSubView === 'all' || selectedSubView === 'catalog') && (
-                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
+                  <div id="tour-catalog-grid" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
                     <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                       <Search size={18} className="text-blue-600 dark:text-blue-400" />
                       {lang === 'th' ? 'ตารางรายวิชาที่เปิดสอนในระบบ' : 'Open Course Schedule & Seats'} ({filteredCatalog.length})
@@ -1562,22 +2184,22 @@ export default function App() {
 
                               {/* Dynamic Seat Bar */}
                               <div>
-                                <div className="flex justify-between items-center text-[11px] mb-1">
+                                <div className="flex justify-between items-center text-xs sm:text-sm font-bold mb-1">
                                   {isFull ? (
-                                    <span className="font-bold flex items-center gap-1 text-red-600 dark:text-red-400">
+                                    <span className="font-extrabold flex items-center gap-1.5 text-red-600 dark:text-red-400">
                                       <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-                                      {lang === 'th' ? `ที่นั่งเต็มแล้ว (0/${c.seatsMax})` : `Full (0/${c.seatsMax})`}
+                                      {lang === 'th' ? `ลงแล้ว ${c.seatsMax}/${c.seatsMax} คน (เต็ม)` : `Enrolled ${c.seatsMax}/${c.seatsMax} (Full)`}
                                     </span>
                                   ) : (
-                                    <span className={isNearlyFull ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-slate-500 dark:text-[#A8B4C7]'}>
-                                      {lang === 'th' ? `เหลือ ${c.seatsAvailable}/${c.seatsMax}` : `Seats ${c.seatsAvailable}/${c.seatsMax}`}
+                                    <span className={isNearlyFull ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-700 dark:text-slate-200'}>
+                                      {lang === 'th' ? `ลงแล้ว ${c.seatsMax - c.seatsAvailable}/${c.seatsMax} คน` : `Enrolled ${c.seatsMax - c.seatsAvailable}/${c.seatsMax}`}
                                     </span>
                                   )}
-                                  <span className={`tabular-nums font-semibold ${isFull ? 'text-red-600' : isNearlyFull ? 'text-amber-600' : 'text-slate-500 dark:text-[#A8B4C7]'}`}>
-                                    {isFull ? (lang === 'th' ? 'เต็ม 100%' : '100% Full') : `${enrolledPercent}%`}
+                                  <span className={`tabular-nums font-extrabold ${isFull ? 'text-red-600' : isNearlyFull ? 'text-amber-600' : 'text-blue-600 dark:text-blue-400'}`}>
+                                    {isFull ? (lang === 'th' ? '100%' : '100%') : `${enrolledPercent}%`}
                                   </span>
                                 </div>
-                                <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                   <div
                                     style={{ width: `${enrolledPercent}%`, backgroundColor: barColor }}
                                     className="h-full rounded-full transition-all duration-300"
@@ -1593,44 +2215,85 @@ export default function App() {
                 )}
 
                 {/* Section 3: Passed Courses */}
-                {(selectedSubView === 'all' || selectedSubView === 'passed') && (
-                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-                    <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                      <CheckCircle2 size={18} className="text-emerald-500" />
-                      {lang === 'th' ? 'รายวิชาที่ผ่านแล้วในหมวดนี้' : 'Passed Courses in this Category'} ({passedInCat.length})
-                    </h4>
-                    <div className="w-full overflow-x-auto">
-                      <table className="w-full text-left border-collapse text-sm">
-                        <thead>
-                          <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                            <th className="p-3">{t.courseCode}</th>
-                            <th className="p-3">{t.courseName}</th>
-                            <th className="p-3">{t.credits}</th>
-                            <th className="p-3">{t.category}</th>
-                            <th className="p-3">{t.term}</th>
-                            <th className="p-3">{t.grade}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {passedInCat.map(c => (
-                            <tr key={c.code + c.term} className="border-b border-slate-100 dark:border-[#2C2E33]">
-                              <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
-                              <td className="p-3 text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
-                              <td className="p-3 tabular-nums">{c.credits}</td>
-                              <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
-                              <td className="p-3 tabular-nums">{c.term}</td>
-                              <td className="p-3">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
-                                  {c.grade}
-                                </span>
-                              </td>
+                {(selectedSubView === 'all' || selectedSubView === 'passed') && (() => {
+                  const filteredPassed = passedInCat.filter(c => {
+                    if (!searchCatalogQuery.trim()) return true;
+                    const q = searchCatalogQuery.toLowerCase();
+                    return (
+                      c.code.toLowerCase().includes(q) ||
+                      c.nameTh.toLowerCase().includes(q) ||
+                      c.nameEn.toLowerCase().includes(q)
+                    );
+                  });
+
+                  const pageSize = 10;
+                  const totalPages = Math.ceil(filteredPassed.length / pageSize) || 1;
+                  const validPage = Math.min(passedCatCurrentPage, totalPages);
+                  const pagedPassed = filteredPassed.slice((validPage - 1) * pageSize, validPage * pageSize);
+
+                  return (
+                    <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                      <div className="flex justify-between items-center flex-wrap gap-2">
+                        <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          <CheckCircle2 size={18} className="text-emerald-500" />
+                          {lang === 'th' ? 'รายวิชาที่ผ่านแล้วในหมวดนี้' : 'Passed Courses in this Category'} ({filteredPassed.length})
+                        </h4>
+                      </div>
+
+                      <div className="w-full overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-sm">
+                          <thead>
+                            <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                              <th className="p-3">{t.courseCode}</th>
+                              <th className="p-3">{t.courseName}</th>
+                              <th className="p-3">{t.credits}</th>
+                              <th className="p-3">{t.category}</th>
+                              <th className="p-3">{t.term}</th>
+                              <th className="p-3">{t.grade}</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {pagedPassed.length === 0 ? (
+                              <tr>
+                                <td colSpan={6} className="p-8 text-center text-xs text-slate-500 dark:text-[#A8B4C7]">
+                                  {lang === 'th' ? 'ไม่พบข้อมูลรายวิชาที่ผ่านแล้ว' : 'No passed courses found.'}
+                                </td>
+                              </tr>
+                            ) : (
+                              pagedPassed.map(c => (
+                                <tr
+                                  key={c.code + c.term}
+                                  onClick={() => handleOpenCourseDetail(c)}
+                                  className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
+                                >
+                                  <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
+                                  <td className="p-3 text-slate-800 dark:text-white font-medium">{lang === 'th' ? c.nameTh : c.nameEn}</td>
+                                  <td className="p-3 tabular-nums font-semibold">{c.credits}</td>
+                                  <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
+                                  <td className="p-3 tabular-nums font-semibold">{c.term}</td>
+                                  <td className="p-3">
+                                    <span className="font-bold text-slate-900 dark:text-white tabular-nums text-sm">
+                                      {c.grade}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Pagination Control */}
+                      <PaginationControl
+                        currentPage={validPage}
+                        totalItems={filteredPassed.length}
+                        pageSize={pageSize}
+                        onPageChange={setPassedCatCurrentPage}
+                        lang={lang}
+                      />
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             );
           })()}
@@ -1705,7 +2368,10 @@ export default function App() {
                         type="text"
                         placeholder={t.searchPlaceholder}
                         value={historySearchQuery}
-                        onChange={(e) => setHistorySearchQuery(e.target.value)}
+                        onChange={(e) => {
+                          setHistorySearchQuery(e.target.value);
+                          setHistoryCurrentPage(1);
+                        }}
                         className="w-full py-2 pl-8 pr-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
                       />
                       <Search size={14} className="absolute left-2.5 top-2.5 text-slate-400" />
@@ -1713,7 +2379,11 @@ export default function App() {
 
                     <select
                       value={historyYearFilter}
-                      onChange={(e) => { setHistoryYearFilter(e.target.value); setHistoryTermFilter('all'); }}
+                      onChange={(e) => {
+                        setHistoryYearFilter(e.target.value);
+                        setHistoryTermFilter('all');
+                        setHistoryCurrentPage(1);
+                      }}
                       className="w-full py-2 px-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
                     >
                       <option value="all">{t.filterAllYears}</option>
@@ -1724,7 +2394,10 @@ export default function App() {
 
                     <select
                       value={historyTermFilter}
-                      onChange={(e) => setHistoryTermFilter(e.target.value)}
+                      onChange={(e) => {
+                        setHistoryTermFilter(e.target.value);
+                        setHistoryCurrentPage(1);
+                      }}
                       className="w-full py-2 px-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
                     >
                       <option value="all">{t.filterAllTerms}</option>
@@ -1737,199 +2410,490 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl overflow-hidden shadow-sm">
-                  <div className="w-full overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                          <th className="p-3">{t.courseCode}</th>
-                          <th className="p-3">{t.courseName}</th>
-                          <th className="p-3">{t.credits}</th>
-                          <th className="p-3">{t.category}</th>
-                          <th className="p-3">{t.term}</th>
-                          <th className="p-3">{t.grade}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredHistoryCourses.map(c => (
-                          <tr key={c.code + c.term} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
-                            <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
-                            <td className="p-3 text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
-                            <td className="p-3 tabular-nums">{c.credits}</td>
-                            <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
-                            <td className="p-3 tabular-nums font-semibold">{c.term}</td>
-                            <td className="p-3">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
-                                {c.grade}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                {(() => {
+                  const pageSize = 20;
+                  const totalPages = Math.ceil(filteredHistoryCourses.length / pageSize) || 1;
+                  const validPage = Math.min(historyCurrentPage, totalPages);
+                  const pagedHistoryCourses = filteredHistoryCourses.slice((validPage - 1) * pageSize, validPage * pageSize);
+
+                  return (
+                    <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                      <div className="w-full overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-sm">
+                          <thead>
+                            <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                              <th className="p-3">{t.courseCode}</th>
+                              <th className="p-3">{t.courseName}</th>
+                              <th className="p-3">{t.credits}</th>
+                              <th className="p-3">{t.category}</th>
+                              <th className="p-3">{t.term}</th>
+                              <th className="p-3">{t.grade}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {pagedHistoryCourses.length === 0 ? (
+                              <tr>
+                                <td colSpan={6} className="p-8 text-center text-xs text-slate-500 dark:text-[#A8B4C7]">
+                                  {lang === 'th' ? 'ไม่พบข้อมูลรายวิชาที่ตรงกับเงื่อนไขการค้นหา' : 'No courses found matching your criteria.'}
+                                </td>
+                              </tr>
+                            ) : (
+                              pagedHistoryCourses.map(c => (
+                                <tr
+                                  key={c.code + c.term}
+                                  onClick={() => handleOpenCourseDetail(c)}
+                                  className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
+                                >
+                                  <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
+                                  <td className="p-3 text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
+                                  <td className="p-3 tabular-nums">{c.credits}</td>
+                                  <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
+                                  <td className="p-3 tabular-nums font-semibold">{c.term}</td>
+                                  <td className="p-3">
+                                    <span className="font-bold text-slate-900 dark:text-white tabular-nums text-sm">
+                                      {c.grade}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Pagination (20 items/page) */}
+                      <div className="p-4 pt-0">
+                        <PaginationControl
+                          currentPage={validPage}
+                          totalItems={filteredHistoryCourses.length}
+                          pageSize={pageSize}
+                          onPageChange={setHistoryCurrentPage}
+                          lang={lang}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })()}
 
           {/* VIEW: Advisor Advisees List */}
-          {currentRoute === '/advisor/students' && (
-            <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-4">{t.adviseesTitle}</h3>
-              <div className="w-full overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                      <th className="p-3">{lang === 'th' ? 'ชื่อ-สกุล' : 'Full Name'}</th>
-                      <th className="p-3">{lang === 'th' ? 'รหัส นศ.' : 'Student ID'}</th>
-                      <th className="p-3">{lang === 'th' ? 'ชั้นปี' : 'Year'}</th>
-                      <th className="p-3">{lang === 'th' ? 'หน่วยกิตสะสม' : 'Earned Credits'}</th>
-                      <th className="p-3">GPA</th>
-                      <th className="p-3">{t.status}</th>
-                      <th className="p-3">{lang === 'th' ? 'การกระทำ' : 'Action'}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {MOCK.advisor.students.map(s => (
-                      <tr key={s.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
-                        <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? s.name : s.nameEn}</td>
-                        <td className="p-3 tabular-nums text-slate-500 dark:text-[#A8B4C7]">{s.id}</td>
-                        <td className="p-3">{t.year} {s.year}</td>
-                        <td className="p-3 tabular-nums">{s.creditsEarned}/{s.creditsReq}</td>
-                        <td className="p-3 tabular-nums font-semibold">{s.gpa.toFixed(2)}</td>
-                        <td className="p-3">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            s.status === 'normal'
-                              ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400'
-                              : s.status === 'warning'
-                              ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400'
-                              : 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400'
-                          }`}>
-                            {lang === 'th' ? s.statusText : s.statusTextEn}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <button
-                            onClick={() => {
-                              setSelectedStudentId(s.id);
-                              setCurrentRoute('/advisor/student-detail');
-                            }}
-                            className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold hover:bg-slate-100 dark:hover:bg-[#2A3038] flex items-center gap-1"
-                          >
-                            <Eye size={14} />
-                            <span>{t.viewDetail}</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {currentRoute === '/advisor/students' && (() => {
+            const q = advisorSearchQuery.trim().toLowerCase();
+            const filtered = MOCK.advisor.students.filter(s => {
+              if (!q) return true;
+              return (
+                s.name.toLowerCase().includes(q) ||
+                s.nameEn.toLowerCase().includes(q) ||
+                s.id.includes(q) ||
+                String(s.year).includes(q) ||
+                s.statusText.toLowerCase().includes(q) ||
+                s.statusTextEn.toLowerCase().includes(q)
+              );
+            });
 
-          {/* VIEW: Advisor Student Detail (Identical Layout to Student Dashboard) */}
-          {currentRoute === '/advisor/student-detail' && (
-            <div className="flex flex-col gap-5">
-              <div className="flex justify-between items-center flex-wrap gap-2">
-                <button
-                  onClick={() => setCurrentRoute('/advisor/students')}
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold bg-white dark:bg-[#191C24]"
-                >
-                  {t.backToAdviseesList}
-                </button>
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                  {lang === 'th' ? activeStudentData.name : activeStudentData.nameEn} ({activeStudentData.id})
-                </span>
-              </div>
+            const pageSize = 20;
+            const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+            const validPage = Math.min(advisorCurrentPage, totalPages);
+            const pagedList = filtered.slice((validPage - 1) * pageSize, validPage * pageSize);
 
-              {/* Read-Only Notice Banner */}
-              <div className="p-3 rounded-xl border-l-4 border-red-500 bg-red-50 dark:bg-[#29181C] text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                <AlertCircle size={18} className="text-red-500 flex-shrink-0" />
-                <span>{t.readOnlyAdviseeBanner}</span>
-              </div>
+            return (
+              <div id="tour-advisor-students" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{t.adviseesTitle}</h3>
+                    <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mt-0.5">
+                      {lang === 'th' ? 'รายชื่อนักศึกษาในความดูแลทั้งหมดและสถานะความคืบหน้าการศึกษา' : 'All advisees in your mentorship and their degree progression status'}
+                    </p>
+                  </div>
 
-              {/* Donut Chart & Category Progress Summary */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col items-center justify-between">
-                  <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white self-start">
-                    {t.overallProgress}
-                  </h3>
-
-                  <DonutProgressChart
-                    studentData={activeStudentData}
-                    lang={lang}
-                    hoveredSegment={hoveredSegment}
-                    setHoveredSegment={setHoveredSegment}
-                  />
-
-                  <div className="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/40 p-3 rounded-xl text-xs text-slate-700 dark:text-slate-300 text-left">
-                    {activeStudentData.creditsRemaining > 0
-                      ? (lang === 'th' ? `คงเหลืออีก ${activeStudentData.creditsRemaining} หน่วยกิต เพื่อสำเร็จการศึกษาตามแผน` : `${activeStudentData.creditsRemaining} credits remaining to graduate.`)
-                      : (lang === 'th' ? 'ผ่านครบตามเกณฑ์หลักสูตรแล้ว' : 'Curriculum requirements fulfilled.')}
+                  {/* Search bar */}
+                  <div className="relative w-full sm:w-72">
+                    <input
+                      type="text"
+                      value={advisorSearchQuery}
+                      onChange={(e) => {
+                        setAdvisorSearchQuery(e.target.value);
+                        setAdvisorCurrentPage(1);
+                      }}
+                      placeholder={lang === 'th' ? 'ค้นหาชื่อ, รหัส นศ., ชั้นปี...' : 'Search by name, ID, year...'}
+                      className="w-full py-2 pl-9 pr-8 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-slate-800 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    />
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    {advisorSearchQuery && (
+                      <button
+                        onClick={() => {
+                          setAdvisorSearchQuery('');
+                          setAdvisorCurrentPage(1);
+                        }}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        title={lang === 'th' ? 'ล้างการค้นหา' : 'Clear search'}
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
-                  <CategoryProgressList
-                    studentData={activeStudentData}
-                    lang={lang}
-                  />
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                        <th className="p-3">{lang === 'th' ? 'ชื่อ-สกุล' : 'Full Name'}</th>
+                        <th className="p-3">{lang === 'th' ? 'รหัส นศ.' : 'Student ID'}</th>
+                        <th className="p-3">{lang === 'th' ? 'ชั้นปี' : 'Year'}</th>
+                        <th className="p-3">{lang === 'th' ? 'หน่วยกิตสะสม' : 'Earned Credits'}</th>
+                        <th className="p-3">GPA</th>
+                        <th className="p-3">{t.status}</th>
+                        <th className="p-3">{lang === 'th' ? 'การกระทำ' : 'Action'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagedList.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-xs text-slate-500 dark:text-[#A8B4C7]">
+                            {lang === 'th' ? 'ไม่พบข้อมูลนักศึกษาที่ตรงกับคำค้นหา' : 'No students found matching your search.'}
+                          </td>
+                        </tr>
+                      ) : (
+                        pagedList.map(s => {
+                          const evalStatus = calculateStudentStatus(s, lang);
+                          return (
+                            <tr key={s.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
+                              <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? s.name : s.nameEn}</td>
+                              <td className="p-3 tabular-nums text-slate-500 dark:text-[#A8B4C7]">{s.id}</td>
+                              <td className="p-3">{t.year} {s.year}</td>
+                              <td className="p-3 tabular-nums font-semibold text-slate-800 dark:text-slate-200">{s.creditsEarned}/{s.creditsReq}</td>
+                              <td className="p-3 tabular-nums font-semibold">{s.gpa.toFixed(2)}</td>
+                              <td className="p-3">
+                                <div className="flex flex-col items-start gap-1">
+                                  <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${evalStatus.badgeStyle}`}>
+                                    {lang === 'th' ? evalStatus.statusText : evalStatus.statusTextEn}
+                                  </span>
+                                  <div className="text-[11px] tabular-nums">
+                                    {evalStatus.creditGap === 0 ? (
+                                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                                        ✓ {lang === 'th' ? `ตามแผน (เป้า ${evalStatus.expectedCredits} หน่วยกิต)` : `On-track (Target ${evalStatus.expectedCredits} cr.)`}
+                                      </span>
+                                    ) : (
+                                      <span className={evalStatus.status === 'danger' ? 'text-red-500 dark:text-red-400 font-medium' : 'text-amber-500 dark:text-amber-400 font-medium'}>
+                                        {lang === 'th' ? `ขาดอีก ${evalStatus.creditGap} หน่วยกิต (เป้า ${evalStatus.expectedCredits})` : `-${evalStatus.creditGap} cr. (Target ${evalStatus.expectedCredits})`}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="p-3">
+                                <button
+                                  onClick={() => {
+                                    setSelectedStudentId(s.id);
+                                    setCurrentRoute('/advisor/student-detail');
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold hover:bg-slate-100 dark:hover:bg-[#2A3038] flex items-center gap-1 active:scale-95 transition-transform"
+                                >
+                                  <Eye size={14} />
+                                  <span>{t.viewDetail}</span>
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
                 </div>
+
+                {/* Pagination (20 items/page) */}
+                <PaginationControl
+                  currentPage={validPage}
+                  totalItems={filtered.length}
+                  pageSize={pageSize}
+                  onPageChange={setAdvisorCurrentPage}
+                  lang={lang}
+                />
               </div>
+            );
+          })()}
 
-              {/* Consultation Notes */}
-              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-3">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <ScrollText size={18} className="text-blue-600 dark:text-blue-400" />
-                  {t.consultationNotesTitle}
-                </h3>
+          {/* VIEW: Advisor Student Detail (Identical Layout to Student Dashboard) */}
+          {currentRoute === '/advisor/student-detail' && (() => {
+            const evalStatus = calculateStudentStatus(activeStudentData, lang);
+            const milestones = getYearMilestones(activeStudentData);
 
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="text"
-                    placeholder={t.consultationPlaceholder}
-                    value={newConsultationText}
-                    onChange={(e) => setNewConsultationText(e.target.value)}
-                    className="flex-1 py-2 px-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
-                  />
+            return (
+              <div className="flex flex-col gap-5 sm:gap-6">
+                {/* Navigation Bar */}
+                <div className="flex justify-between items-center flex-wrap gap-2.5">
                   <button
-                    onClick={() => {
-                      if (!newConsultationText.trim()) return;
-                      const entry = {
-                        id: Date.now(),
-                        studentId: activeStudentData.id,
-                        date: "2 ก.ย. 2569",
-                        dateEn: "2 Sep 2026",
-                        author: MOCK.advisor.name,
-                        authorEn: MOCK.advisor.nameEn,
-                        note: newConsultationText.trim(),
-                        noteEn: newConsultationText.trim()
-                      };
-                      setAdvisorConsultations([entry, ...advisorConsultations]);
-                      setNewConsultationText('');
-                    }}
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
+                    onClick={() => setCurrentRoute('/advisor/students')}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#2C2E33] text-xs sm:text-sm font-bold bg-white dark:bg-[#191C24] hover:bg-slate-50 dark:hover:bg-[#2A3038] text-slate-700 dark:text-slate-200 flex items-center gap-2 transition-all shadow-sm active:scale-95"
                   >
-                    {t.addConsultationBtn}
+                    <ArrowLeft size={16} />
+                    <span>{t.backToAdviseesList}</span>
                   </button>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40">
+                      <AlertCircle size={14} />
+                      {lang === 'th' ? 'โหมดตรวจสอบผลการเรียน' : 'Audit Mode'}
+                    </span>
+                    <button
+                      onClick={() => setIsPdfOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-all active:scale-95"
+                    >
+                      <Download size={15} />
+                      <span>{t.exportPdfBtn}</span>
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-2 mt-2">
-                  {advisorConsultations.filter(c => c.studentId === activeStudentData.id).map(c => (
-                    <div key={c.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] text-xs">
-                      <div className="flex justify-between items-center text-slate-500 dark:text-[#A8B4C7] mb-1">
-                        <span className="font-semibold text-slate-800 dark:text-white">{lang === 'th' ? c.author : c.authorEn}</span>
-                        <span className="tabular-nums">{lang === 'th' ? c.date : c.dateEn}</span>
-                      </div>
-                      <div className="text-slate-800 dark:text-slate-200">{lang === 'th' ? c.note : c.noteEn}</div>
+                {/* Student Profile Header Card */}
+                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl flex-shrink-0 ${
+                      evalStatus.status === 'danger'
+                        ? 'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-800/40'
+                        : evalStatus.status === 'warning'
+                        ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40'
+                        : 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40'
+                    }`}>
+                      {lang === 'th'
+                        ? (activeStudentData.name ? activeStudentData.name.replace(/^(นาย|นางสาว|นาง)\s*/, '').slice(0, 2) : 'นศ')
+                        : (activeStudentData.nameEn ? activeStudentData.nameEn.replace(/^(Mr\.|Ms\.|Mrs\.)\s*/, '').slice(0, 2).toUpperCase() : 'ST')}
                     </div>
-                  ))}
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                          {lang === 'th' ? activeStudentData.name : activeStudentData.nameEn}
+                        </h2>
+                        <span className="tabular-nums font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#2A3038] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#2C2E33]">
+                          {activeStudentData.id}
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                          {t.year} {activeStudentData.year}
+                        </span>
+                        <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${evalStatus.badgeStyle}`}>
+                          {lang === 'th' ? evalStatus.statusText : evalStatus.statusTextEn}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-[#A8B4C7] mt-0.5">
+                        {lang === 'th' ? activeStudentData.curriculum : activeStudentData.curriculumEn} • {lang === 'th' ? activeStudentData.faculty : activeStudentData.facultyEn}
+                      </p>
+                      <div className="text-xs text-slate-700 dark:text-slate-300 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                        <span>{t.gpa}: <strong className="tabular-nums text-blue-600 dark:text-blue-400 text-sm font-extrabold">{activeStudentData.gpa.toFixed(2)}</strong></span>
+                        <span>{t.advisor}: <strong>{lang === 'th' ? activeStudentData.advisor : activeStudentData.advisorEn}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Credits Counter Pill */}
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-[#2C2E33] gap-1">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                      {lang === 'th' ? 'หน่วยกิตสะสม' : 'Earned Credits'}
+                    </span>
+                    <div className="tabular-nums text-base sm:text-lg font-extrabold text-blue-600 dark:text-blue-400">
+                      {activeStudentData.creditsEarned} <span className="text-xs font-medium text-slate-400">/ {activeStudentData.totalCreditsRequired}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Academic Progression & Benchmark Audit Card */}
+                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 dark:border-[#2C2E33] pb-3">
+                    <div>
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <GraduationCap size={18} className="text-blue-600 dark:text-blue-400" />
+                        {lang === 'th' ? 'การประเมินสถานะตามเกณฑ์หน่วยกิตสะสมรายชั้นปี' : 'Year-Level Cumulative Credit Benchmark Audit'}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mt-0.5">
+                        {lang === 'th'
+                          ? `ประเมินเทียบกับเป้าหมายตามแผนการเรียนของหลักสูตร (${activeStudentData.totalCreditsRequired} หน่วยกิต)`
+                          : `Evaluated against study plan benchmark (${activeStudentData.totalCreditsRequired} Total Credits)`}
+                      </p>
+                    </div>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${evalStatus.badgeStyle}`}>
+                      {lang === 'th' ? `สถานะ: ${evalStatus.statusText}` : `Status: ${evalStatus.statusTextEn}`}
+                    </span>
+                  </div>
+
+                  {/* 4-Year Milestone Stepper Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    {milestones.map(ms => {
+                      const isCurrentYear = ms.isCurrent;
+                      const isTargetMet = ms.isPassedTarget;
+                      return (
+                        <div
+                          key={ms.year}
+                          className={`p-4 rounded-xl border flex flex-col justify-between gap-3 transition-all ${
+                            isCurrentYear
+                              ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-400 dark:border-blue-500 ring-2 ring-blue-500/20 shadow-sm'
+                              : ms.isPast
+                              ? 'bg-slate-50 dark:bg-[#2A3038] border-slate-200 dark:border-[#2C2E33]'
+                              : 'bg-slate-50/50 dark:bg-[#222736] border-slate-200/60 dark:border-[#2C2E33]/60 opacity-80'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-slate-800 dark:text-white">
+                                {lang === 'th' ? `ชั้นปีที่ ${ms.year}` : `Year ${ms.year}`}
+                              </span>
+                              {isCurrentYear && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white shadow-xs">
+                                  {lang === 'th' ? 'ชั้นปีปัจจุบัน' : 'Current'}
+                                </span>
+                              )}
+                            </div>
+                            {isTargetMet ? (
+                              <span className="p-1 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+                                <Check size={13} strokeWidth={3} />
+                              </span>
+                            ) : isCurrentYear ? (
+                              <span className="p-1 rounded-full bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                                <AlertCircle size={13} />
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <div>
+                            <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7]">
+                              {lang === 'th' ? 'เป้าหมายสะสม' : 'Expected Benchmark'}
+                            </div>
+                            <div className="text-lg font-extrabold text-slate-900 dark:text-white tabular-nums mt-0.5">
+                              {ms.targetCredits} <span className="text-xs font-semibold text-slate-500">{lang === 'th' ? 'หน่วยกิต' : 'cr.'}</span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between items-center text-[11px] mb-1 font-semibold">
+                              <span className="text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? 'สะสมจริง' : 'Actual Earned'}</span>
+                              <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
+                                {Math.min(activeStudentData.creditsEarned, ms.targetCredits)} / {ms.targetCredits}
+                              </span>
+                            </div>
+                            <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div
+                                style={{
+                                  width: `${Math.min(100, Math.round((activeStudentData.creditsEarned / ms.targetCredits) * 100))}%`,
+                                  backgroundColor: isTargetMet ? '#16A34A' : isCurrentYear ? (evalStatus.status === 'danger' ? '#EF4444' : '#F59E0B') : '#2563EB'
+                                }}
+                                className="h-full rounded-full transition-all duration-300"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Evaluation Insight Callout Box */}
+                  <div className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs ${
+                    evalStatus.status === 'normal'
+                      ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-300'
+                      : evalStatus.status === 'warning'
+                      ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-300'
+                      : 'bg-red-50/70 dark:bg-red-950/20 border-red-200 dark:border-red-800/40 text-red-900 dark:text-red-300'
+                  }`}>
+                    <div className="flex items-start gap-2.5">
+                      <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-sm">
+                          {lang === 'th'
+                            ? `ผลการประเมิน: ${evalStatus.statusText}`
+                            : `Audit Result: ${evalStatus.statusTextEn}`}
+                        </div>
+                        <p className="mt-0.5 text-xs opacity-90">
+                          {lang === 'th' ? evalStatus.explanationTh : evalStatus.explanationEn}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0 self-end sm:self-center font-semibold">
+                      {lang === 'th' ? 'ความคืบหน้าเทียบเป้าหมายปีนี้:' : 'Progress to Year Benchmark:'}{' '}
+                      <strong className="tabular-nums text-sm font-extrabold">{evalStatus.progressPercent}%</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Donut Chart & Category Progress Summary */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col items-center justify-between">
+                    <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white self-start">
+                      {t.overallProgress}
+                    </h3>
+
+                    <DonutProgressChart
+                      studentData={activeStudentData}
+                      lang={lang}
+                      hoveredSegment={hoveredSegment}
+                      setHoveredSegment={setHoveredSegment}
+                    />
+
+                    <div className="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/40 p-3 rounded-xl text-xs text-slate-700 dark:text-slate-300 text-left">
+                      {activeStudentData.creditsRemaining > 0
+                        ? (lang === 'th' ? `คงเหลืออีก ${activeStudentData.creditsRemaining} หน่วยกิต เพื่อสำเร็จการศึกษาตามแผน` : `${activeStudentData.creditsRemaining} credits remaining to graduate.`)
+                        : (lang === 'th' ? 'ผ่านครบตามเกณฑ์หลักสูตรแล้ว' : 'Curriculum requirements fulfilled.')}
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
+                    <CategoryProgressList
+                      studentData={activeStudentData}
+                      lang={lang}
+                    />
+                  </div>
+                </div>
+
+                {/* Consultation Notes */}
+                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <ScrollText size={18} className="text-blue-600 dark:text-blue-400" />
+                    {t.consultationNotesTitle}
+                  </h3>
+
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      placeholder={t.consultationPlaceholder}
+                      value={newConsultationText}
+                      onChange={(e) => setNewConsultationText(e.target.value)}
+                      className="flex-1 py-2 px-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!newConsultationText.trim()) return;
+                        const entry = {
+                          id: Date.now(),
+                          studentId: activeStudentData.id,
+                          date: "2 ก.ย. 2569",
+                          dateEn: "2 Sep 2026",
+                          author: MOCK.advisor.name,
+                          authorEn: MOCK.advisor.nameEn,
+                          note: newConsultationText.trim(),
+                          noteEn: newConsultationText.trim()
+                        };
+                        setAdvisorConsultations([entry, ...advisorConsultations]);
+                        setNewConsultationText('');
+                      }}
+                      className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold active:scale-95 transition-transform"
+                    >
+                      {t.addConsultationBtn}
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-2 mt-2">
+                    {advisorConsultations.filter(c => c.studentId === activeStudentData.id).map(c => (
+                      <div key={c.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] text-xs">
+                        <div className="flex justify-between items-center text-slate-500 dark:text-[#A8B4C7] mb-1">
+                          <span className="font-semibold text-slate-800 dark:text-white">{lang === 'th' ? c.author : c.authorEn}</span>
+                          <span className="tabular-nums">{lang === 'th' ? c.date : c.dateEn}</span>
+                        </div>
+                        <div className="text-slate-800 dark:text-slate-200">{lang === 'th' ? c.note : c.noteEn}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* VIEW: Advisor Department Overview */}
           {currentRoute === '/advisor/department' && (
@@ -1954,7 +2918,7 @@ export default function App() {
                       <div key={item.year} className="p-4 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] text-center">
                         <span className="text-xs font-semibold text-slate-500 dark:text-[#A8B4C7]">{item.year}</span>
                         <div className="tabular-nums text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">{item.count}</div>
-                        <span className="text-[11px] text-slate-400">{lang === 'th' ? 'คน' : 'Students'}</span>
+                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{lang === 'th' ? 'คน' : 'Students'}</span>
                       </div>
                     ))}
                   </div>
@@ -1985,8 +2949,8 @@ export default function App() {
           {currentRoute === '/admin/stats' && (() => {
             const periodData = MOCK.admin.statsByPeriod[statsPeriod];
             return (
-              <div className="flex flex-col gap-5">
-                <div className="flex justify-between items-center flex-wrap gap-2">
+              <div id="tour-admin-stats" className="flex flex-col gap-5">
+                <div className="flex justify-start items-center flex-wrap gap-2">
                   <div className="flex gap-1 bg-slate-200 dark:bg-[#2A3038] p-1 rounded-xl">
                     {['daily', 'weekly', 'monthly', 'term', 'year'].map(p => (
                       <button
@@ -1996,14 +2960,18 @@ export default function App() {
                           statsPeriod === p ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-700 dark:text-slate-300'
                         }`}
                       >
-                        {p === 'daily' ? 'รายวัน' : p === 'weekly' ? 'รายสัปดาห์' : p === 'monthly' ? 'รายเดือน' : p === 'term' ? 'รายภาค' : 'รายปี'}
+                        {p === 'daily'
+                          ? (lang === 'th' ? 'รายวัน' : 'Daily')
+                          : p === 'weekly'
+                          ? (lang === 'th' ? 'รายสัปดาห์' : 'Weekly')
+                          : p === 'monthly'
+                          ? (lang === 'th' ? 'รายเดือน' : 'Monthly')
+                          : p === 'term'
+                          ? (lang === 'th' ? 'รายภาค' : 'Term')
+                          : (lang === 'th' ? 'รายปี' : 'Year')}
                       </button>
                     ))}
                   </div>
-                  <span className="text-xs text-slate-500 dark:text-[#A8B4C7] font-medium flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                    {lang === 'th' ? 'สถิติอัปเดตแบบเรียลไทม์' : 'Real-time telemetry'}
-                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -2032,7 +3000,9 @@ export default function App() {
                       <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-1">
                         {lang === 'th' ? 'สัดส่วนการใช้งานแยกตาม 5 วิทยาเขต ม.อ.' : 'PSU Campuses Usage'}
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mb-4">จำนวนการตรวจสอบสะสม</p>
+                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mb-4">
+                        {lang === 'th' ? 'จำนวนการตรวจสอบสะสม' : 'Total Cumulative Checks'}
+                      </p>
                     </div>
                     <div className="flex flex-col gap-3">
                       {MOCK.admin.campusStats.map(c => (
@@ -2057,7 +3027,9 @@ export default function App() {
                       <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-1">
                         {lang === 'th' ? 'สถิติการตรวจสอบหน่วยกิตแยกตามคณะ' : 'Checks by Faculty'}
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mb-4">คณะที่มีการตรวจสอบสูงสุด</p>
+                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mb-4">
+                        {lang === 'th' ? 'คณะที่มีการตรวจสอบสูงสุด' : 'Faculties with Highest Checks'}
+                      </p>
                     </div>
                     <div className="flex flex-col gap-2.5">
                       {MOCK.admin.facultyStats.map(f => (
@@ -2077,74 +3049,219 @@ export default function App() {
           })()}
 
           {/* VIEW: Admin Users Management */}
-          {currentRoute === '/admin/users' && (
-            <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">
-                {lang === 'th' ? 'จัดการและตรวจสอบผู้ใช้งานระบบ' : 'User Accounts Directory'}
-              </h3>
-              <div className="w-full overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                      <th className="p-3">{lang === 'th' ? 'ชื่อ-สกุล' : 'Full Name'}</th>
-                      <th className="p-3">Email</th>
-                      <th className="p-3">{lang === 'th' ? 'บทบาท' : 'Role'}</th>
-                      <th className="p-3">{lang === 'th' ? 'หน่วยงาน' : 'Department'}</th>
-                      <th className="p-3">{lang === 'th' ? 'เข้าใช้ล่าสุด' : 'Last Login'}</th>
-                      <th className="p-3">{lang === 'th' ? 'การกระทำ' : 'Action'}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {MOCK.admin.users.map(u => (
-                      <tr
-                        key={u.id}
+          {currentRoute === '/admin/users' && (() => {
+            const adminCampus = 'วิทยาเขตหาดใหญ่';
+            const adminCampusEn = 'Hat Yai Campus';
+            const campusUsers = MOCK.admin.users.filter(u => u.campus === adminCampus || u.campusEn === adminCampusEn);
+
+            const q = adminSearchQuery.trim().toLowerCase();
+            const filtered = campusUsers.filter(u => {
+              if (!q) return true;
+              return (
+                u.name.toLowerCase().includes(q) ||
+                u.nameEn.toLowerCase().includes(q) ||
+                u.id.includes(q) ||
+                u.email.toLowerCase().includes(q) ||
+                u.role.toLowerCase().includes(q) ||
+                u.roleEn.toLowerCase().includes(q) ||
+                u.department.toLowerCase().includes(q) ||
+                u.departmentEn.toLowerCase().includes(q)
+              );
+            });
+
+            const pageSize = 20;
+            const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+            const validPage = Math.min(adminCurrentPage, totalPages);
+            const pagedList = filtered.slice((validPage - 1) * pageSize, validPage * pageSize);
+
+            return (
+              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                      {lang === 'th' ? 'จัดการและตรวจสอบผู้ใช้งานระบบ' : 'User Accounts Directory'}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mt-0.5">
+                      {lang === 'th'
+                        ? 'แสดงเฉพาะผู้ใช้งานในวิทยาเขตของคุณตามสิทธิ์ผู้ดูแลระบบ'
+                        : 'Showing only users within your campus scope based on admin privileges'}
+                    </p>
+                  </div>
+
+                  {/* Search bar */}
+                  <div className="relative w-full sm:w-72">
+                    <input
+                      type="text"
+                      value={adminSearchQuery}
+                      onChange={(e) => {
+                        setAdminSearchQuery(e.target.value);
+                        setAdminCurrentPage(1);
+                      }}
+                      placeholder={lang === 'th' ? 'ค้นหาชื่อ, email, หน่วยงาน...' : 'Search by name, email, dept...'}
+                      className="w-full py-2 pl-9 pr-8 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-slate-800 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    />
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    {adminSearchQuery && (
+                      <button
                         onClick={() => {
-                          setSelectedAdminUser(u);
-                          if (u.role === 'นักศึกษา' || u.roleEn === 'Student') setSelectedStudentId(u.id);
-                          setCurrentRoute('/admin/user-detail');
+                          setAdminSearchQuery('');
+                          setAdminCurrentPage(1);
                         }}
-                        className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        title={lang === 'th' ? 'ล้างการค้นหา' : 'Clear search'}
                       >
-                        <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? u.name : u.nameEn}</td>
-                        <td className="p-3 text-xs text-slate-500 dark:text-[#A8B4C7] tabular-nums">{u.email}</td>
-                        <td className="p-3">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            u.role === 'นักศึกษา' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600'
-                          }`}>
-                            {lang === 'th' ? u.role : u.roleEn}
-                          </span>
-                        </td>
-                        <td className="p-3 text-xs">{lang === 'th' ? u.department : u.departmentEn}</td>
-                        <td className="p-3 text-xs text-slate-400 tabular-nums">{u.lastLogin}</td>
-                        <td className="p-3">
-                          <button className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold flex items-center gap-1">
-                            <Eye size={14} />
-                            <span>{t.viewDetail}</span>
-                          </button>
-                        </td>
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                        <th className="p-3">{lang === 'th' ? 'ชื่อ-สกุล' : 'Full Name'}</th>
+                        <th className="p-3">Email</th>
+                        <th className="p-3">{lang === 'th' ? 'บทบาท' : 'Role'}</th>
+                        <th className="p-3">{lang === 'th' ? 'วิทยาเขต' : 'Campus'}</th>
+                        <th className="p-3">{lang === 'th' ? 'หน่วยงาน' : 'Department'}</th>
+                        <th className="p-3">{lang === 'th' ? 'เข้าใช้ล่าสุด' : 'Last Login'}</th>
+                        <th className="p-3">{lang === 'th' ? 'การกระทำ' : 'Action'}</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {pagedList.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-xs text-slate-500 dark:text-[#A8B4C7]">
+                            {lang === 'th' ? 'ไม่พบข้อมูลผู้ใช้ที่ตรงกับคำค้นหา' : 'No users found matching your search.'}
+                          </td>
+                        </tr>
+                      ) : (
+                        pagedList.map(u => (
+                          <tr
+                            key={u.id}
+                            onClick={() => {
+                              setSelectedAdminUser(u);
+                              if (u.role === 'นักศึกษา' || u.roleEn === 'Student') setSelectedStudentId(u.id);
+                              setCurrentRoute('/admin/user-detail');
+                            }}
+                            className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer"
+                          >
+                            <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? u.name : u.nameEn}</td>
+                            <td className="p-3 text-xs text-slate-500 dark:text-[#A8B4C7] tabular-nums">{u.email}</td>
+                            <td className="p-3">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                u.role === 'นักศึกษา' || u.roleEn === 'Student' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                              }`}>
+                                {lang === 'th' ? u.role : u.roleEn}
+                              </span>
+                            </td>
+                            <td className="p-3 text-xs">
+                              <span className="inline-flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
+                                <Building2 size={13} className="text-blue-500 flex-shrink-0" />
+                                {lang === 'th' ? u.campus : u.campusEn}
+                              </span>
+                            </td>
+                            <td className="p-3 text-xs">{lang === 'th' ? u.department : u.departmentEn}</td>
+                            <td className="p-3 text-xs text-slate-400 tabular-nums">{lang === 'th' ? u.lastLogin : u.lastLoginEn}</td>
+                            <td className="p-3">
+                              <button className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold flex items-center gap-1 active:scale-95 transition-transform">
+                                <Eye size={14} />
+                                <span>{t.viewDetail}</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination (20 items/page) */}
+                <PaginationControl
+                  currentPage={validPage}
+                  totalItems={filtered.length}
+                  pageSize={pageSize}
+                  onPageChange={setAdminCurrentPage}
+                  lang={lang}
+                />
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* VIEW: Admin User Details */}
           {currentRoute === '/admin/user-detail' && (() => {
             const user = selectedAdminUser || MOCK.admin.users[0];
             return (
-              <div className="flex flex-col gap-5">
-                <button
-                  onClick={() => setCurrentRoute('/admin/users')}
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold w-fit bg-white dark:bg-[#191C24]"
-                >
-                  ← {lang === 'th' ? 'กลับไปหน้ารายชื่อผู้ใช้งาน' : 'Back to User Directory'}
-                </button>
+              <div className="flex flex-col gap-5 sm:gap-6">
+                {/* Navigation Bar */}
+                <div className="flex justify-between items-center flex-wrap gap-2.5">
+                  <button
+                    onClick={() => setCurrentRoute('/admin/users')}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#2C2E33] text-xs sm:text-sm font-bold bg-white dark:bg-[#191C24] hover:bg-slate-50 dark:hover:bg-[#2A3038] text-slate-700 dark:text-slate-200 flex items-center gap-2 transition-all shadow-sm active:scale-95"
+                  >
+                    <ArrowLeft size={16} />
+                    <span>{lang === 'th' ? 'กลับไปหน้ารายชื่อผู้ใช้งาน' : 'Back to User Directory'}</span>
+                  </button>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40">
+                      <UserCog size={14} />
+                      {lang === 'th' ? `โหมดผู้ดูแลระบบ — ตรวจสอบ ${user.name}` : `Admin Audit — ${user.nameEn || user.name}`}
+                    </span>
+                    <button
+                      onClick={() => setIsPdfOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-all active:scale-95"
+                    >
+                      <Download size={15} />
+                      <span>{t.exportPdfBtn}</span>
+                    </button>
+                  </div>
+                </div>
 
-                <div className="p-3 rounded-xl border-l-4 border-blue-600 bg-blue-50 dark:bg-blue-950/20 text-xs font-semibold flex items-center gap-2">
-                  <UserCog size={18} className="text-blue-600" />
-                  <span>โหมดผู้ดูแลระบบ (Admin) — กำลังตรวจสอบข้อมูลของ {user.name} ({user.id})</span>
+                {/* Student Profile Header Card */}
+                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 flex items-center justify-center font-bold text-xl flex-shrink-0">
+                      {lang === 'th'
+                        ? (user.name ? user.name.replace(/^(นาย|นางสาว|นาง|ดร\.|ผศ\.ดร\.)\s*/, '').slice(0, 2) : 'นศ')
+                        : (user.nameEn ? user.nameEn.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.|Asst\. Prof\.)\s*/, '').slice(0, 2).toUpperCase() : 'US')}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                          {lang === 'th' ? user.name : user.nameEn}
+                        </h2>
+                        <span className="tabular-nums font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#2A3038] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#2C2E33]">
+                          {user.id}
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 capitalize">
+                          {lang === 'th' ? user.role : user.roleEn}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-[#A8B4C7] mt-0.5 flex items-center gap-2 flex-wrap">
+                        <span>{lang === 'th' ? (user.department || activeStudentData.curriculum) : (user.departmentEn || activeStudentData.curriculumEn)}</span>
+                        <span>•</span>
+                        <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300 font-medium">
+                          <Building2 size={13} className="text-blue-500" />
+                          {lang === 'th' ? (user.campus || activeStudentData.campus) : (user.campusEn || activeStudentData.campusEn)}
+                        </span>
+                      </p>
+                      <div className="text-xs text-slate-700 dark:text-slate-300 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                        <span>{t.gpa}: <strong className="tabular-nums text-blue-600 dark:text-blue-400 text-sm font-extrabold">{activeStudentData.gpa.toFixed(2)}</strong></span>
+                        <span>{t.advisor}: <strong>{lang === 'th' ? activeStudentData.advisor : activeStudentData.advisorEn}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Credits Counter Pill */}
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-[#2C2E33] gap-1">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                      {lang === 'th' ? 'หน่วยกิตสะสม' : 'Earned Credits'}
+                    </span>
+                    <div className="tabular-nums text-base sm:text-lg font-extrabold text-blue-600 dark:text-blue-400">
+                      {activeStudentData.creditsEarned} <span className="text-xs font-medium text-slate-400">/ {activeStudentData.totalCreditsRequired} {t.credits}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
@@ -2171,55 +3288,30 @@ export default function App() {
             );
           })()}
 
-          {/* VIEW: Curriculums & Logs */}
-          {currentRoute === '/admin/curriculums' && (
-            <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">จัดการหลักสูตร</h3>
-              <div className="w-full overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-[#2A3038]">
-                      <th className="p-3">ชื่อหลักสูตร</th>
-                      <th className="p-3">ระดับ</th>
-                      <th className="p-3">คณะ</th>
-                      <th className="p-3">หน่วยกิต</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {MOCK.admin.curriculums.map(c => (
-                      <tr key={c.id} className="border-b border-slate-100 dark:border-[#2C2E33]">
-                        <td className="p-3 font-medium">{c.nameTh}</td>
-                        <td className="p-3">{c.level}</td>
-                        <td className="p-3">{c.faculty}</td>
-                        <td className="p-3 tabular-nums">{c.credits}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {/* VIEW: Admin Audit Logs */}
 
           {currentRoute === '/admin/logs' && (
             <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">บันทึกการใช้งานระบบ</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">
+                {lang === 'th' ? 'บันทึกประวัติการใช้งานระบบ (System Logs)' : 'System Audit & Activity Logs'}
+              </h3>
               <div className="w-full overflow-x-auto">
                 <table className="w-full text-left border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-[#2A3038]">
-                      <th className="p-3">เวลา</th>
-                      <th className="p-3">ผู้ใช้</th>
-                      <th className="p-3">การกระทำ</th>
-                      <th className="p-3">รายการ</th>
+                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                      <th className="p-3">{lang === 'th' ? 'เวลา' : 'Timestamp'}</th>
+                      <th className="p-3">{lang === 'th' ? 'ผู้ใช้งาน' : 'User'}</th>
+                      <th className="p-3">{lang === 'th' ? 'การกระทำ' : 'Action'}</th>
+                      <th className="p-3">{lang === 'th' ? 'รายละเอียด' : 'Details'}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {MOCK.admin.logs.map(l => (
-                      <tr key={l.id} className="border-b border-slate-100 dark:border-[#2C2E33]">
-                        <td className="p-3 text-xs tabular-nums text-slate-400">{l.time}</td>
-                        <td className="p-3 font-semibold text-xs">{l.user}</td>
-                        <td className="p-3 text-xs font-bold text-blue-600">{l.action}</td>
-                        <td className="p-3 text-xs">{l.target}</td>
+                      <tr key={l.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
+                        <td className="p-3 text-xs tabular-nums text-slate-400">{lang === 'th' ? l.time : l.timeEn}</td>
+                        <td className="p-3 font-semibold text-xs text-slate-800 dark:text-white">{l.user}</td>
+                        <td className="p-3 text-xs font-bold text-blue-600 dark:text-blue-400">{lang === 'th' ? l.action : l.actionEn}</td>
+                        <td className="p-3 text-xs text-slate-700 dark:text-slate-300">{lang === 'th' ? l.target : l.targetEn}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -2231,114 +3323,399 @@ export default function App() {
       </div>
 
       {/* Floating Demo Role Switcher */}
-      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-1 p-1 bg-white/90 dark:bg-[#191C24]/90 backdrop-blur-md rounded-full border border-slate-200 dark:border-[#2C2E33] shadow-lg">
+      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 p-1.5 bg-white/95 dark:bg-[#191C24]/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-[#2C2E33] shadow-lg">
         <button
           onClick={() => { setCurrentRole('student'); setCurrentRoute('/student'); }}
-          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-            currentRole === 'student' ? 'bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300'
+          className={`px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] shadow-sm flex items-center gap-1.5 transition-all text-xs ${
+            currentRole === 'student'
+              ? 'bg-blue-600 text-white font-bold border-blue-600 shadow-blue-500/20'
+              : 'bg-white dark:bg-[#191C24] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#2A3038]'
           }`}
         >
-          🎓 {t.roleStudent}
+          <GraduationCap size={14} />
+          <span>{t.roleStudent}</span>
         </button>
         <button
           onClick={() => { setCurrentRole('advisor'); setCurrentRoute('/advisor/students'); }}
-          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-            currentRole === 'advisor' ? 'bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300'
+          className={`px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] shadow-sm flex items-center gap-1.5 transition-all text-xs ${
+            currentRole === 'advisor'
+              ? 'bg-blue-600 text-white font-bold border-blue-600 shadow-blue-500/20'
+              : 'bg-white dark:bg-[#191C24] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#2A3038]'
           }`}
         >
-          🧑‍🏫 {t.roleAdvisor}
+          <Users size={14} />
+          <span>{t.roleAdvisor}</span>
         </button>
         <button
           onClick={() => { setCurrentRole('admin'); setCurrentRoute('/admin/stats'); }}
-          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-            currentRole === 'admin' ? 'bg-blue-600 text-white' : 'text-slate-700 dark:text-slate-300'
+          className={`px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] shadow-sm flex items-center gap-1.5 transition-all text-xs ${
+            currentRole === 'admin'
+              ? 'bg-blue-600 text-white font-bold border-blue-600 shadow-blue-500/20'
+              : 'bg-white dark:bg-[#191C24] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#2A3038]'
           }`}
         >
-          ⚙️ {t.roleAdmin}
+          <Settings size={14} />
+          <span>{t.roleAdmin}</span>
         </button>
       </div>
 
       {/* Printable PDF Preview Modal */}
-      {isPdfOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          onClick={() => setIsPdfOpen(false)}
-        >
+      {isPdfOpen && (() => {
+        const studentForPdf = activeStudentData;
+        const evalStatus = calculateStudentStatus(studentForPdf, lang);
+        return (
           <div
-            className="bg-white dark:bg-[#191C24] text-slate-900 dark:text-white w-full max-w-xl rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-[#2C2E33]"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+            onClick={() => setIsPdfOpen(false)}
           >
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#2C2E33] pb-3 mb-4">
-              <h3 className="font-bold text-base text-blue-600 dark:text-blue-400">{t.exportPdfModalTitle}</h3>
-              <button onClick={() => window.print()} className="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5">
-                <Printer size={14} /> {t.printPdfBtn}
-              </button>
-            </div>
-            <div className="text-xs space-y-2 bg-slate-50 dark:bg-[#2A3038] p-4 rounded-xl border border-slate-200 dark:border-[#2C2E33]">
-              <div><strong>ชื่อ-สกุล:</strong> {MOCK.student.name} ({MOCK.student.id})</div>
-              <div><strong>หลักสูตร:</strong> {MOCK.student.curriculum}</div>
-              <div><strong>หน่วยกิตที่ได้แล้ว:</strong> {MOCK.student.creditsEarned} / {MOCK.student.totalCreditsRequired}</div>
-              <div><strong>เกรดเฉลี่ยสะสม:</strong> {MOCK.student.gpa.toFixed(2)}</div>
-            </div>
-            <div className="flex justify-end mt-4">
-              <button onClick={() => setIsPdfOpen(false)} className="px-4 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold">
-                {t.closeBtn}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            <div
+              className="bg-white text-slate-900 w-full max-w-4xl rounded-2xl p-6 sm:p-8 shadow-2xl border border-slate-300 my-auto flex flex-col gap-6 max-h-[92vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Top Actions (Hidden when printing) */}
+              <div className="flex justify-between items-center border-b border-slate-200 pb-3.5 print:hidden">
+                <div className="flex items-center gap-2">
+                  <FileText size={20} className="text-blue-600" />
+                  <h3 className="font-bold text-base sm:text-lg text-slate-900">
+                    {lang === 'th' ? 'ตัวอย่างใบรายงานการตรวจสอบหน่วยกิต (PDF Audit Sheet)' : 'Academic Credit Audit Sheet Preview'}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm active:scale-95 transition-all"
+                  >
+                    <Printer size={15} />
+                    <span>{t.printPdfBtn}</span>
+                  </button>
+                  <button
+                    onClick={() => setIsPdfOpen(false)}
+                    className="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs sm:text-sm font-semibold transition-all"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
 
-      {/* Guided Tour Modal */}
-      {isTourOpen && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#191C24] text-slate-900 dark:text-white max-w-sm w-full rounded-2xl p-5 border border-slate-200 dark:border-[#2C2E33] shadow-2xl">
-            <h3 className="text-base font-bold text-blue-600 dark:text-blue-400 mb-2">ยินดีต้อนรับสู่ PSU Credit Checker</h3>
-            <p className="text-xs text-slate-600 dark:text-[#A8B4C7] leading-relaxed mb-4">
-              ระบบช่วยตรวจสอบและคำนวณหน่วยกิตสะสมตามโครงสร้างหลักสูตร รองรับทั้งนักศึกษา อาจารย์ที่ปรึกษา และผู้ดูแลระบบแบบครบวงจร
-            </p>
-            <div className="flex justify-end">
-              <button onClick={() => setIsTourOpen(false)} className="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold">
-                เข้าใจแล้ว
-              </button>
+              {/* Official PSU Audit Sheet Document Container */}
+              <div id="psu-audit-document" className="bg-white p-2 text-slate-900 flex flex-col gap-5">
+                {/* Official University Header */}
+                <div className="border-b-2 border-slate-900 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <img src="/PSU-Logo-usual.png" alt="PSU Logo" className="h-14 w-auto object-contain" />
+                    <div>
+                      <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight leading-tight">
+                        มหาวิทยาลัยสงขลานครินทร์ (PRINCE OF SONGKLA UNIVERSITY)
+                      </h1>
+                      <h2 className="text-xs sm:text-sm font-bold text-blue-700 mt-0.5">
+                        {lang === 'th' ? 'ใบรายงานผลการตรวจสอบและคำนวณหน่วยกิตสะสมตามโครงสร้างหลักสูตร' : 'Official Academic Credit Progression & Curriculum Audit Report'}
+                      </h2>
+                      <p className="text-[11px] text-slate-500 mt-0.5 font-medium">
+                        วิทยาเขตหาดใหญ่ • {studentForPdf.faculty}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right sm:self-center">
+                    <span className="text-[11px] font-mono text-slate-500 block">
+                      {lang === 'th' ? 'วันที่ออกเอกสาร:' : 'Issue Date:'} 2 ก.ย. 2569
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-500 block">
+                      Doc ID: PSU-CS-2026-{studentForPdf.id.slice(-4)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Student Info & Academic Metrics Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+                  <div className="space-y-1.5">
+                    <div><span className="text-slate-500 font-semibold">{lang === 'th' ? 'ชื่อ-สกุล:' : 'Full Name:'}</span> <strong className="text-slate-900 font-bold">{studentForPdf.name} ({studentForPdf.nameEn})</strong></div>
+                    <div><span className="text-slate-500 font-semibold">{lang === 'th' ? 'รหัสนักศึกษา:' : 'Student ID:'}</span> <strong className="text-slate-900 font-mono">{studentForPdf.id}</strong></div>
+                    <div><span className="text-slate-500 font-semibold">{lang === 'th' ? 'หลักสูตร:' : 'Curriculum:'}</span> <span className="text-slate-800">{studentForPdf.curriculum}</span></div>
+                    <div><span className="text-slate-500 font-semibold">{lang === 'th' ? 'อาจารย์ที่ปรึกษา:' : 'Academic Advisor:'}</span> <span className="text-slate-800">{studentForPdf.advisor}</span></div>
+                  </div>
+                  <div className="space-y-1.5 sm:border-l sm:border-slate-200 sm:pl-4">
+                    <div><span className="text-slate-500 font-semibold">{lang === 'th' ? 'ระดับชั้นปี:' : 'Year Level:'}</span> <strong>{t.year} {studentForPdf.year}</strong></div>
+                    <div><span className="text-slate-500 font-semibold">{lang === 'th' ? 'เกรดเฉลี่ยสะสม (GPAX):' : 'Cumulative GPAX:'}</span> <strong className="text-blue-700 text-sm font-extrabold">{studentForPdf.gpa.toFixed(2)}</strong></div>
+                    <div><span className="text-slate-500 font-semibold">{lang === 'th' ? 'สถานะความก้าวหน้า:' : 'Progression Status:'}</span> <span className={`inline-flex items-center px-2 py-0.5 rounded font-bold text-[11px] ${evalStatus.badgeStyle}`}>{evalStatus.statusText}</span></div>
+                    <div><span className="text-slate-500 font-semibold">{lang === 'th' ? 'หน่วยกิตสะสมรวม:' : 'Total Earned Credits:'}</span> <strong className="text-slate-900 font-extrabold">{studentForPdf.creditsEarned} / {studentForPdf.totalCreditsRequired} หน่วยกิต ({((studentForPdf.creditsEarned / studentForPdf.totalCreditsRequired) * 100).toFixed(1)}%)</strong></div>
+                  </div>
+                </div>
+
+                {/* Detailed Category Breakdown Table */}
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 mb-2 flex items-center gap-1.5">
+                    <CheckCircle2 size={16} className="text-emerald-600" />
+                    {lang === 'th' ? 'สรุปผลการสะสมหน่วยกิตจำแนกตามหมวดหมู่วิชา' : 'Cumulative Credits Breakdown by Category'}
+                  </h4>
+                  <div className="w-full overflow-x-auto border border-slate-200 rounded-xl">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
+                          <th className="p-2.5">หมวดหมู่วิชา</th>
+                          <th className="p-2.5 text-center">เกณฑ์กำหนด</th>
+                          <th className="p-2.5 text-center">สะสมแล้ว</th>
+                          <th className="p-2.5 text-center">คงเหลือ</th>
+                          <th className="p-2.5 text-center">ความคืบหน้า</th>
+                          <th className="p-2.5 text-center">ผลการประเมิน</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {studentForPdf.categories.map(cat => {
+                          const isComplete = cat.earned >= cat.required;
+                          const remaining = Math.max(0, cat.required - cat.earned);
+                          const percent = Math.min(100, Math.round((cat.earned / cat.required) * 100));
+                          return (
+                            <tr key={cat.id} className="border-b border-slate-100 hover:bg-slate-50">
+                              <td className="p-2.5 font-semibold text-slate-800">
+                                {lang === 'th' ? cat.nameTh : cat.nameEn}
+                              </td>
+                              <td className="p-2.5 text-center tabular-nums font-semibold">{cat.required} หน่วยกิต</td>
+                              <td className="p-2.5 text-center tabular-nums font-bold text-blue-700">{cat.earned} หน่วยกิต</td>
+                              <td className="p-2.5 text-center tabular-nums text-slate-600">{remaining} หน่วยกิต</td>
+                              <td className="p-2.5 text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                  <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                    <div style={{ width: `${percent}%` }} className={`h-full rounded-full ${isComplete ? 'bg-emerald-600' : 'bg-blue-600'}`} />
+                                  </div>
+                                  <span className="text-[10px] tabular-nums font-semibold text-slate-600">{percent}%</span>
+                                </div>
+                              </td>
+                              <td className="p-2.5 text-center">
+                                {isComplete ? (
+                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+                                    <Check size={12} strokeWidth={3} /> {lang === 'th' ? 'ผ่านเกณฑ์' : 'Fulfilled'}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700">
+                                    <AlertCircle size={12} /> {lang === 'th' ? `ขาด ${remaining} หน่วยกิต` : `Needs ${remaining} cr.`}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Progress Summary & Certification Notice */}
+                <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-xs text-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div>
+                    <span className="font-bold text-blue-900 block text-xs sm:text-sm">
+                      {studentForPdf.creditsRemaining > 0
+                        ? (lang === 'th' ? `สรุปภาพรวม: ยังขาดอีก ${studentForPdf.creditsRemaining} หน่วยกิต เพื่อสำเร็จการศึกษา` : `Summary: ${studentForPdf.creditsRemaining} credits remaining to graduate`)
+                        : (lang === 'th' ? 'สรุปภาพรวม: ผ่านครบตามโครงสร้างหลักสูตรกำหนด 132 หน่วยกิต' : 'Summary: All 132 credits fulfilled')}
+                    </span>
+                    <span className="text-[11px] text-slate-600">
+                      {evalStatus.explanationTh}
+                    </span>
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    <span className="px-3 py-1 rounded-md bg-blue-600 text-white font-bold text-xs">
+                      {lang === 'th' ? 'คาดว่าจะจบ:' : 'Est. Graduation:'} {studentForPdf.expectedGraduation}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Official Signatures Section */}
+                <div className="grid grid-cols-2 gap-8 pt-6 border-t border-slate-200 mt-2 text-center text-xs">
+                  <div className="flex flex-col items-center">
+                    <div className="w-44 border-b border-slate-400 pb-1 mb-1"></div>
+                    <span className="font-semibold text-slate-800">({studentForPdf.name})</span>
+                    <span className="text-[11px] text-slate-500 mt-0.5">{lang === 'th' ? 'นักศึกษาผู้ขอตรวจสอบ' : 'Student Signature'}</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-44 border-b border-slate-400 pb-1 mb-1"></div>
+                    <span className="font-semibold text-slate-800">({studentForPdf.advisor})</span>
+                    <span className="text-[11px] text-slate-500 mt-0.5">{lang === 'th' ? 'อาจารย์ที่ปรึกษาทางวิชาการ' : 'Academic Advisor Signature'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Close */}
+              <div className="flex justify-end pt-3 border-t border-slate-200 print:hidden">
+                <button
+                  onClick={() => setIsPdfOpen(false)}
+                  className="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold transition-all"
+                >
+                  {t.closeBtn}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Course Detail Modal */}
-      {selectedCourseDetail && (
-        <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedCourseDetail(null)}
-        >
+      {selectedCourseDetail && (() => {
+        const enrolled = selectedCourseDetail.seatsMax - selectedCourseDetail.seatsAvailable;
+        const total = selectedCourseDetail.seatsMax;
+        const percent = Math.min(100, Math.round((enrolled / total) * 100));
+        const isFull = selectedCourseDetail.seatsAvailable === 0;
+        const isNearlyFull = !isFull && selectedCourseDetail.seatsAvailable / total <= 0.15;
+        const barColor = isFull ? '#DC2626' : isNearlyFull ? '#D97706' : '#2563EB';
+
+        return (
           <div
-            className="bg-white dark:bg-[#191C24] text-slate-900 dark:text-white max-w-md w-full rounded-2xl p-5 border border-slate-200 dark:border-[#2C2E33] shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setSelectedCourseDetail(null)}
           >
-            <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#2C2E33] pb-3 mb-3">
-              <div>
-                <span className="tabular-nums text-sm font-bold text-blue-600">{selectedCourseDetail.code} ({selectedCourseDetail.credits} {t.credits})</span>
-                <h4 className="text-base font-bold mt-0.5">{lang === 'th' ? selectedCourseDetail.nameTh : selectedCourseDetail.nameEn}</h4>
+            <div
+              className="bg-white dark:bg-[#191C24] text-slate-900 dark:text-white max-w-2xl w-full rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-[#2C2E33] shadow-2xl transition-all flex flex-col gap-4 sm:gap-5 max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-start border-b border-slate-100 dark:border-[#2C2E33] pb-4">
+                <div className="flex flex-col gap-1.5 pr-4">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="tabular-nums px-2.5 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold text-xs">
+                      {selectedCourseDetail.code}
+                    </span>
+                    <CategoryBadge categoryId={selectedCourseDetail.category} lang={lang} />
+                    <span className="tabular-nums px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-[#2A3038] text-slate-600 dark:text-slate-300 font-semibold text-xs">
+                      {selectedCourseDetail.credits} {lang === 'th' ? 'หน่วยกิต' : 'Credits'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1">
+                    {lang === 'th' ? selectedCourseDetail.nameTh : selectedCourseDetail.nameEn}
+                  </h3>
+                  <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-[#A8B4C7]">
+                    {lang === 'th' ? selectedCourseDetail.nameEn : selectedCourseDetail.nameTh}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setSelectedCourseDetail(null)}
+                  className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#2A3038] text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all flex-shrink-0"
+                  title={t.closeBtn}
+                >
+                  <X size={20} />
+                </button>
               </div>
-              <button onClick={() => setSelectedCourseDetail(null)} className="p-1 text-slate-400 hover:text-slate-600">
-                <X size={18} />
-              </button>
-            </div>
-            <div className="text-xs space-y-2 text-slate-600 dark:text-slate-300 py-2">
-              <div><strong>คำอธิบาย:</strong> {lang === 'th' ? selectedCourseDetail.description : selectedCourseDetail.descriptionEn}</div>
-              <div><strong>วิชาบังคับก่อน:</strong> {selectedCourseDetail.prerequisite}</div>
-              <div><strong>ตารางเรียน:</strong> {lang === 'th' ? selectedCourseDetail.schedule : selectedCourseDetail.scheduleEn}</div>
-              <div><strong>ผู้สอน:</strong> {lang === 'th' ? selectedCourseDetail.instructor : selectedCourseDetail.instructorEn}</div>
-            </div>
-            <div className="flex justify-end pt-3 border-t border-slate-200 dark:border-[#2C2E33]">
-              <button onClick={() => setSelectedCourseDetail(null)} className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold">
-                {t.closeBtn}
-              </button>
+
+              {/* Course Description */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
+                  <BookOpen size={14} />
+                  <span>{lang === 'th' ? 'คำอธิบายรายวิชา' : 'Course Description'}</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
+                  {lang === 'th' ? selectedCourseDetail.description : selectedCourseDetail.descriptionEn}
+                </p>
+              </div>
+
+              {/* 2x2 Info Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Prerequisites */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#A8B4C7]">
+                    <FileText size={14} className="text-amber-500" />
+                    <span>{lang === 'th' ? 'วิชาบังคับก่อน' : 'Prerequisite'}</span>
+                  </div>
+                  <div className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">
+                    {selectedCourseDetail.prerequisite && selectedCourseDetail.prerequisite !== '-' ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold">
+                        {selectedCourseDetail.prerequisite}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 font-normal">{lang === 'th' ? 'ไม่มีวิชาบังคับก่อน' : 'None'}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Instructor */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#A8B4C7]">
+                    <User size={14} className="text-indigo-500" />
+                    <span>{lang === 'th' ? 'อาจารย์ผู้สอน' : 'Instructor'}</span>
+                  </div>
+                  <div className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                    {lang === 'th' ? selectedCourseDetail.instructor : selectedCourseDetail.instructorEn}
+                  </div>
+                </div>
+
+                {/* Schedule & Room */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#A8B4C7]">
+                    <Clock size={14} className="text-emerald-500" />
+                    <span>{lang === 'th' ? 'ตารางเรียนและห้องเรียน' : 'Schedule & Room'}</span>
+                  </div>
+                  <div className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-white tabular-nums">
+                    {lang === 'th' ? selectedCourseDetail.schedule : selectedCourseDetail.scheduleEn}
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#A8B4C7]">
+                    <Bookmark size={14} className="text-purple-500" />
+                    <span>{lang === 'th' ? 'หมวดวิชาหลักสูตร' : 'Curriculum Category'}</span>
+                  </div>
+                  <div className="pt-0.5">
+                    <CategoryBadge categoryId={selectedCourseDetail.category} lang={lang} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Seat Availability Meter */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#222736] border border-slate-200/80 dark:border-[#2C2E33] flex flex-col gap-2.5">
+                <div className="flex justify-between items-center flex-wrap gap-2 text-xs sm:text-sm font-bold">
+                  <span className="text-slate-800 dark:text-white flex items-center gap-1.5">
+                    <Users size={15} className="text-blue-500" />
+                    <span>{lang === 'th' ? 'จำนวนที่นั่งและการลงทะเบียน' : 'Seat Capacity & Enrollment'}</span>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="tabular-nums font-extrabold text-slate-900 dark:text-white">
+                      {lang === 'th'
+                        ? `ลงแล้ว ${enrolled}/${total} คน`
+                        : `Enrolled ${enrolled}/${total}`}
+                    </span>
+                    {isFull ? (
+                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400">
+                        {lang === 'th' ? 'เต็ม' : 'Full'}
+                      </span>
+                    ) : isNearlyFull ? (
+                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                        {lang === 'th' ? `เหลือ ${selectedCourseDetail.seatsAvailable} ที่` : `${selectedCourseDetail.seatsAvailable} left`}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+                        {lang === 'th' ? `ว่าง ${selectedCourseDetail.seatsAvailable} ที่` : `${selectedCourseDetail.seatsAvailable} seats`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    style={{
+                      width: `${percent}%`,
+                      backgroundColor: barColor
+                    }}
+                    className="h-full rounded-full transition-all duration-300"
+                  />
+                </div>
+
+                <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-[#A8B4C7] tabular-nums font-medium">
+                  <span>{lang === 'th' ? `สัดส่วนการจองที่นั่ง: ${percent}%` : `Enrollment Rate: ${percent}%`}</span>
+                  <span>{lang === 'th' ? `รองรับสูงสุด ${total} ที่นั่ง` : `Max Capacity: ${total} seats`}</span>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex justify-end items-center pt-2 border-t border-slate-100 dark:border-[#2C2E33]">
+                <button
+                  onClick={() => setSelectedCourseDetail(null)}
+                  className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  <span>{t.closeBtn}</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

@@ -24,6 +24,7 @@ import {
   KeyRound,
   HelpCircle,
   ChevronRight,
+  ChevronLeft,
   X,
   Eye,
   PanelLeft,
@@ -219,6 +220,148 @@ const I18N = {
   }
 };
 
+const generateMockAdvisees = () => {
+  const thaiFirstNames = ['สมชาย', 'ปิยะนุช', 'ธนกฤต', 'อนุชา', 'กิตติศักดิ์', 'พรทิพย์', 'ณัฐวุฒิ', 'ศิริพร', 'ชานนท์', 'วิภาวดี', 'อภิสิทธิ์', 'วรัญญา', 'จิรวัฒน์', 'พัชรินทร์', 'ธีรภัทร', 'เกวลิน', 'พงศกร', 'สุชาดา', 'ธนาคาร', 'กานต์ธิดา', 'อัครพล', 'รุ่งทิวา', 'ศุภกร', 'สิริกานต์', 'ปิยวัฒน์', 'พิมพ์มาดา', 'วรพล', 'นภัสสร', 'ปฏิภาณ', 'อนัญพร', 'กิตติธัช', 'เบญญาภา', 'ธนภัทร', 'ชญานิษฐ์', 'สรวิศ', 'ทิพวรรณ', 'ปรเมศวร์', 'อริสา', 'วรเชษฐ์', 'ธวัลรัตน์', 'อานนท์', 'มัลลิกา', 'ภาณุวัฒน์', 'ลลิตา', 'ภานุเดช', 'ดวงใจ'];
+  const thaiLastNames = ['ใจดี', 'แก้วมณี', 'รักษ์ทอง', 'บุญเรือง', 'สุขเกษม', 'จันทร์กระจ่าง', 'วงศ์สุวรรณ', 'เจริญสุข', 'ศรีวิไล', 'พงษ์พาณิชย์', 'ทองคำ', 'สุวรรณรัตน์', 'คงแก้ว', 'วิจิตรพันธุ์', 'สถิตพงษ์', 'ประสิทธิ์ผล', 'ธรรมนูญ', 'ไชยสุวรรณ', 'อินทร์แก้ว', 'พัฒนกิจ', 'ศิริโชค', 'สมบัติผล', 'ชูรักษ์', 'บุญคง', 'มณีรัตน์', 'เพชรจำรูญ', 'สุขสมบูรณ์', 'วัฒนประดิษฐ์', 'แสงจันทร์', 'ไพศาล', 'กอบเกื้อ', 'อัมพวรรณ', 'ชัยมงคล', 'สิทธิชัย', 'สุขประสิทธิ์', 'วรกุล', 'นาคสงวน', 'บริบูรณ์', 'ปิยวัจน์', 'นันทิวัชร'];
+  const enFirstNames = ['Somchai', 'Piyanuch', 'Thanakrit', 'Anucha', 'Kittisak', 'Pornthip', 'Natthawut', 'Siriporn', 'Chanon', 'Vipawadee', 'Apisit', 'Waranya', 'Jirawat', 'Patcharin', 'Theeraphat', 'Kewalin', 'Pongsakorn', 'Suchada', 'Thanakhon', 'Kantida', 'Akkarapol', 'Rungtiwa', 'Suphakon', 'Sirikarn', 'Piyawat', 'Pimmada', 'Worapol', 'Napassorn', 'Patiphan', 'Ananyaporn', 'Kittithat', 'Benyapha', 'Thanaphat', 'Chayanit', 'Sorawit', 'Thipwawan', 'Poramet', 'Arisa', 'Worachet', 'Thawanrat', 'Arnon', 'Mallika', 'Panuwat', 'Lalita', 'Panudet', 'Duangjai'];
+  const enLastNames = ['Jaidee', 'Kaewmanee', 'Rakthong', 'Boonruang', 'Sukkasem', 'Jankrajang', 'Wongsuwan', 'Charoensuk', 'Sriwilai', 'Pongpanich', 'Thongkham', 'Suwannarat', 'Kongkaew', 'Vijitphan', 'Sathitpong', 'Prasitphol', 'Thammanoon', 'Chaisuwann', 'Inkaew', 'Pattanakit', 'Sirichok', 'Sombatphol', 'Choorak', 'Boonkong', 'Maneerat', 'Petchjamroon', 'Suksomboon', 'Wattanapradit', 'Saengjan', 'Phaisan', 'Kopkuea', 'Amphawan', 'Chaimongkol', 'Sitthichai', 'Sukprasit', 'Worakul', 'Naksanguan', 'Boriboon', 'Piyawat', 'Nanthiwatchara'];
+
+  const students = [];
+  for (let i = 0; i < 48; i++) {
+    const isFemale = i % 3 === 1;
+    const prefixTh = isFemale ? 'นางสาว' : 'นาย';
+    const prefixEn = isFemale ? 'Ms.' : 'Mr.';
+    const fnTh = thaiFirstNames[i % thaiFirstNames.length];
+    const lnTh = thaiLastNames[i % thaiLastNames.length];
+    const fnEn = enFirstNames[i % enFirstNames.length];
+    const lnEn = enLastNames[i % enLastNames.length];
+    const year = (i % 4) + 1;
+    const entryYear = 68 - year;
+    const idNum = String(i + 1).padStart(4, '0');
+    const id = `${entryYear}1011${idNum}`;
+    
+    let target = year === 1 ? 33 : year === 2 ? 66 : year === 3 ? 99 : 132;
+    let creditsEarned;
+    let gpa;
+    let status, statusText, statusTextEn;
+    
+    if (i === 0) {
+      creditsEarned = 99; gpa = 3.24; status = 'normal'; statusText = 'ปกติ'; statusTextEn = 'Normal';
+    } else if (i === 1) {
+      creditsEarned = 102; gpa = 3.61; status = 'normal'; statusText = 'ปกติ'; statusTextEn = 'Normal';
+    } else if (i === 2) {
+      creditsEarned = 84; gpa = 2.41; status = 'warning'; statusText = 'เสี่ยง'; statusTextEn = 'Warning';
+    } else if (i === 3) {
+      creditsEarned = 92; gpa = 1.94; status = 'danger'; statusText = 'ต้องติดตามด่วน'; statusTextEn = 'Critical';
+    } else {
+      const r = i % 5;
+      if (r === 0 || r === 1 || r === 2) {
+        creditsEarned = target + (i % 6);
+        gpa = Number((2.75 + ((i % 12) * 0.1)).toFixed(2));
+        status = 'normal'; statusText = 'ปกติ'; statusTextEn = 'Normal';
+      } else if (r === 3) {
+        creditsEarned = Math.max(15, target - 10 - (i % 8));
+        gpa = Number((2.15 + ((i % 5) * 0.08)).toFixed(2));
+        status = 'warning'; statusText = 'เสี่ยง'; statusTextEn = 'Warning';
+      } else {
+        creditsEarned = Math.max(10, target - 22 - (i % 12));
+        gpa = Number((1.85 + ((i % 4) * 0.05)).toFixed(2));
+        status = 'danger'; statusText = 'ต้องติดตามด่วน'; statusTextEn = 'Critical';
+      }
+    }
+
+    students.push({
+      id,
+      name: `${prefixTh}${fnTh} ${lnTh}`,
+      nameEn: `${prefixEn} ${fnEn} ${lnEn}`,
+      year,
+      creditsEarned,
+      creditsReq: 132,
+      gpa,
+      status,
+      statusText,
+      statusTextEn,
+      faculty: 'คณะวิทยาศาสตร์',
+      facultyEn: 'Faculty of Science',
+      campus: 'วิทยาเขตหาดใหญ่',
+      campusEn: 'Hat Yai Campus',
+      curriculum: 'วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์',
+      curriculumEn: 'B.Sc. in Computer Science',
+      advisor: 'ผศ.ดร.วิชัย ทองสุข',
+      advisorEn: 'Asst. Prof. Dr. Wichai Thongsuk'
+    });
+  }
+  return students;
+};
+
+const generateMockAdminUsers = (adviseeStudents) => {
+  const users = [];
+
+  adviseeStudents.forEach((s, idx) => {
+    const emailPrefix = s.nameEn.toLowerCase().replace(/^(mr\.|ms\.|mrs\.)\s*/, '').replace(/\s+/g, '.').replace(/[^a-z.]/g, '');
+    const email = `${emailPrefix || 'student' + idx}@psu.ac.th`;
+    const day = (idx % 28) + 1;
+    const hour = String(8 + (idx % 14)).padStart(2, '0');
+    const min = String((idx * 7) % 60).padStart(2, '0');
+    users.push({
+      id: s.id,
+      name: s.name,
+      nameEn: s.nameEn,
+      email,
+      role: 'นักศึกษา',
+      roleEn: 'Student',
+      campus: 'วิทยาเขตหาดใหญ่',
+      campusEn: 'Hat Yai Campus',
+      department: 'คณะวิทยาศาสตร์',
+      departmentEn: 'Faculty of Science',
+      lastLogin: `${day} ส.ค. 2569 ${hour}:${min}`,
+      lastLoginEn: `${day} Aug 2026 ${hour}:${min}`
+    });
+  });
+
+  users.push({
+    id: "u2",
+    name: "ผศ.ดร.วิชัย ทองสุข",
+    nameEn: "Asst. Prof. Dr. Wichai Thongsuk",
+    email: "wichai.t@psu.ac.th",
+    role: "อาจารย์",
+    roleEn: "Advisor",
+    campus: "วิทยาเขตหาดใหญ่",
+    campusEn: "Hat Yai Campus",
+    department: "ภาควิชาวิทยาการคอมพิวเตอร์",
+    departmentEn: "Dept. of Computer Science",
+    lastLogin: "1 ก.ย. 2569 20:15",
+    lastLoginEn: "1 Sep 2026 20:15"
+  });
+
+  users.push({
+    id: "u3",
+    name: "นายสมศักดิ์ แอดมิน",
+    nameEn: "Mr. Somsak Admin",
+    email: "somsak.admin@psu.ac.th",
+    role: "ผู้ดูแลระบบ",
+    roleEn: "Admin",
+    campus: "วิทยาเขตหาดใหญ่",
+    campusEn: "Hat Yai Campus",
+    department: "สำนักนวัตกรรมดิจิทัล",
+    departmentEn: "Digital Innovation Office",
+    lastLogin: "1 ก.ย. 2569 21:45",
+    lastLoginEn: "1 Sep 2026 21:45"
+  });
+
+  users.push(
+    { id: "6720110015", name: "นายอับดุลเลาะห์ สาและ", nameEn: "Mr. Abdullah Salaeh", email: "abdullah.s@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตปัตตานี", campusEn: "Pattani Campus", department: "คณะศึกษาศาสตร์", departmentEn: "Faculty of Education", lastLogin: "31 ส.ค. 2569 14:10", lastLoginEn: "31 Aug 2026 14:10" },
+    { id: "6730110042", name: "นางสาวกัญญาภัทร สิริสุข", nameEn: "Ms. Kanyapat Sirisuk", email: "kanyapat.s@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตภูเก็ต", campusEn: "Phuket Campus", department: "คณะการบริการและการท่องเที่ยว", departmentEn: "Faculty of Hospitality and Tourism", lastLogin: "28 ส.ค. 2569 16:30", lastLoginEn: "28 Aug 2026 16:30" },
+    { id: "6740110009", name: "นายธนวัฒน์ รัตนพันธ์", nameEn: "Mr. Thanawat Rattanapan", email: "thanawat.r@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตสุราษฎร์ธานี", campusEn: "Surat Thani Campus", department: "คณะวิทยาศาสตร์และเทคโนโลยีอุตสาหกรรม", departmentEn: "Faculty of Science and Industrial Tech", lastLogin: "29 ส.ค. 2569 09:15", lastLoginEn: "29 Aug 2026 09:15" },
+    { id: "6750110018", name: "นางสาวสุภาพร แสงทอง", nameEn: "Ms. Supaporn Saengthong", email: "supaporn.s@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตตรัง", campusEn: "Trang Campus", department: "คณะพาณิชยศาสตร์และการจัดการ", departmentEn: "Faculty of Commerce and Management", lastLogin: "27 ส.ค. 2569 11:50", lastLoginEn: "27 Aug 2026 11:50" }
+  );
+
+  return users;
+};
+
+const MOCK_ADVISEES_DATA = generateMockAdvisees();
+const MOCK_ADMIN_USERS_DATA = generateMockAdminUsers(MOCK_ADVISEES_DATA);
+
 const MOCK = {
   student: {
     id: "6710110001",
@@ -335,12 +478,7 @@ const MOCK = {
   advisor: {
     name: "ผศ.ดร.วิชัย ทองสุข",
     nameEn: "Asst. Prof. Dr. Wichai Thongsuk",
-    students: [
-      { id: "6710110001", name: "นายสมชาย ใจดี", nameEn: "Mr. Somchai Jaidee", year: 3, creditsEarned: 99, creditsReq: 132, gpa: 3.24, status: "normal", statusText: "ปกติ", statusTextEn: "Normal", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
-      { id: "6710110002", name: "นางสาวปิยะนุช แก้วมณี", nameEn: "Ms. Piyanuch Kaewmanee", year: 3, creditsEarned: 102, creditsReq: 132, gpa: 3.61, status: "normal", statusText: "ปกติ", statusTextEn: "Normal", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
-      { id: "6710110003", name: "นายธนกฤต รักษ์ทอง", nameEn: "Mr. Thanakrit Rakthong", year: 3, creditsEarned: 84, creditsReq: 132, gpa: 2.41, status: "warning", statusText: "เสี่ยง", statusTextEn: "Warning", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
-      { id: "6610110024", name: "นายอนุชา บุญเรือง", nameEn: "Mr. Anucha Boonruang", year: 4, creditsEarned: 92, creditsReq: 132, gpa: 1.94, status: "danger", statusText: "ต้องติดตามด่วน", statusTextEn: "Critical", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" }
-    ],
+    students: MOCK_ADVISEES_DATA,
     consultations: [
       { id: 1, studentId: "6710110001", date: "28 ก.พ. 2569", dateEn: "28 Feb 2026", author: "ผศ.ดร.วิชัย ทองสุข", authorEn: "Asst. Prof. Dr. Wichai Thongsuk", note: "เข้าพบเพื่อวางแผนลงทะเบียนภาค 2/2569 แนะนำให้เก็บวิชาเฉพาะบังคับ 344-303 และเริ่มหาหัวข้อโปรเจกต์", noteEn: "Consulted on Term 2/2026 course plan. Recommended completing required 344-303 and starting senior project research." }
     ]
@@ -367,24 +505,7 @@ const MOCK = {
       { nameTh: "คณะวิทยาการจัดการ", nameEn: "Faculty of Management Sciences", count: "31,800", percent: 14, color: "#EA580C" },
       { nameTh: "คณะมนุษยศาสตร์และสังคมศาสตร์", nameEn: "Faculty of Humanities", count: "27,500", percent: 12, color: "#9333EA" }
     ],
-    curriculums: [
-      { id: "c1", nameTh: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", nameEn: "B.Sc. in Computer Science", level: "ปริญญาตรี", levelEn: "Bachelor's", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", year: "2567", credits: 132, status: "active" },
-      { id: "c2", nameTh: "วิทยาศาสตรบัณฑิต สาขาวิชาเทคโนโลยีสารสนเทศ", nameEn: "B.Sc. in Information Technology", level: "ปริญญาตรี", levelEn: "Bachelor's", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", year: "2565", credits: 128, status: "active" },
-      { id: "c3", nameTh: "วิศวกรรมศาสตรบัณฑิต สาขาวิชาวิศวกรรมคอมพิวเตอร์", nameEn: "B.Eng. in Computer Engineering", level: "ปริญญาตรี", levelEn: "Bachelor's", faculty: "คณะวิศวกรรมศาสตร์", facultyEn: "Faculty of Engineering", year: "2566", credits: 140, status: "active" }
-    ],
-    users: [
-      // Hat Yai Campus Users (Same Campus as Current Admin)
-      { id: "6710110001", name: "นายสมชาย ใจดี", nameEn: "Mr. Somchai Jaidee", email: "somchai.j@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตหาดใหญ่", campusEn: "Hat Yai Campus", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "1 ก.ย. 2569 21:30", lastLoginEn: "1 Sep 2026 21:30" },
-      { id: "6710110002", name: "นางสาวปิยะนุช แก้วมณี", nameEn: "Ms. Piyanuch Kaewmanee", email: "piyanuch.k@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตหาดใหญ่", campusEn: "Hat Yai Campus", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "1 ก.ย. 2569 19:40", lastLoginEn: "1 Sep 2026 19:40" },
-      { id: "6610110024", name: "นายอนุชา บุญเรือง", nameEn: "Mr. Anucha Boonruang", email: "anucha.b@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตหาดใหญ่", campusEn: "Hat Yai Campus", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "30 ส.ค. 2569 11:20", lastLoginEn: "30 Aug 2026 11:20" },
-      { id: "u2", name: "ผศ.ดร.วิชัย ทองสุข", nameEn: "Asst. Prof. Dr. Wichai Thongsuk", email: "wichai.t@psu.ac.th", role: "อาจารย์", roleEn: "Advisor", campus: "วิทยาเขตหาดใหญ่", campusEn: "Hat Yai Campus", department: "ภาควิชาวิทยาการคอมพิวเตอร์", departmentEn: "Dept. of Computer Science", lastLogin: "1 ก.ย. 2569 20:15", lastLoginEn: "1 Sep 2026 20:15" },
-      { id: "u3", name: "นายสมศักดิ์ แอดมิน", nameEn: "Mr. Somsak Admin", email: "somsak.admin@psu.ac.th", role: "ผู้ดูแลระบบ", roleEn: "Admin", campus: "วิทยาเขตหาดใหญ่", campusEn: "Hat Yai Campus", department: "สำนักนวัตกรรมดิจิทัล", departmentEn: "Digital Innovation Office", lastLogin: "1 ก.ย. 2569 21:45", lastLoginEn: "1 Sep 2026 21:45" },
-      // Other PSU Campuses Users (Different Campuses)
-      { id: "6720110015", name: "นายอับดุลเลาะห์ สาและ", nameEn: "Mr. Abdullah Salaeh", email: "abdullah.s@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตปัตตานี", campusEn: "Pattani Campus", department: "คณะศึกษาศาสตร์", departmentEn: "Faculty of Education", lastLogin: "31 ส.ค. 2569 14:10", lastLoginEn: "31 Aug 2026 14:10" },
-      { id: "6730110042", name: "นางสาวกัญญาภัทร สิริสุข", nameEn: "Ms. Kanyapat Sirisuk", email: "kanyapat.s@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตภูเก็ต", campusEn: "Phuket Campus", department: "คณะการบริการและการท่องเที่ยว", departmentEn: "Faculty of Hospitality and Tourism", lastLogin: "28 ส.ค. 2569 16:30", lastLoginEn: "28 Aug 2026 16:30" },
-      { id: "6740110009", name: "นายธนวัฒน์ รัตนพันธ์", nameEn: "Mr. Thanawat Rattanapan", email: "thanawat.r@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตสุราษฎร์ธานี", campusEn: "Surat Thani Campus", department: "คณะวิทยาศาสตร์และเทคโนโลยีอุตสาหกรรม", departmentEn: "Faculty of Science and Industrial Tech", lastLogin: "29 ส.ค. 2569 09:15", lastLoginEn: "29 Aug 2026 09:15" },
-      { id: "6750110018", name: "นางสาวสุภาพร แสงทอง", nameEn: "Ms. Supaporn Saengthong", email: "supaporn.s@psu.ac.th", role: "นักศึกษา", roleEn: "Student", campus: "วิทยาเขตตรัง", campusEn: "Trang Campus", department: "คณะพาณิชยศาสตร์และการจัดการ", departmentEn: "Faculty of Commerce and Management", lastLogin: "27 ส.ค. 2569 11:50", lastLoginEn: "27 Aug 2026 11:50" }
-    ],
+    users: MOCK_ADMIN_USERS_DATA,
     logs: [
       { id: "l1", time: "01/09/2569 21:45:10", timeEn: "01/09/2026 21:45:10", user: "somsak.admin@psu.ac.th", role: "ผู้ดูแลระบบ", roleEn: "Admin", action: "แก้ไขหลักสูตร", actionEn: "Update Curriculum", target: "วท.บ. วิทยาการคอมพิวเตอร์ 2567", targetEn: "B.Sc. Computer Science 2024", ip: "192.168.1.104" },
       { id: "l2", time: "01/09/2569 21:30:22", timeEn: "01/09/2026 21:30:22", user: "somchai.j@psu.ac.th", role: "นักศึกษา", roleEn: "Student", action: "ส่งออกรายงาน PDF", actionEn: "Export PDF Report", target: "รายงานตรวจสอบหน่วยกิตสะสม", targetEn: "Academic Credit Audit Report", ip: "10.24.50.88" }
@@ -456,6 +577,63 @@ const ThemeSwitch = ({ theme, toggleTheme, lang = 'th' }) => {
         )}
       </span>
     </button>
+  );
+};
+
+const PaginationControl = ({ currentPage, totalItems, pageSize = 20, onPageChange, lang = 'th' }) => {
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endIndex = Math.min(currentPage * pageSize, totalItems);
+
+  if (totalItems === 0) return null;
+
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 px-1 border-t border-slate-200/80 dark:border-[#2C2E33] text-xs">
+      <div className="text-slate-500 dark:text-[#A8B4C7] font-medium">
+        {lang === 'th'
+          ? `แสดง ${startIndex}-${endIndex} จากทั้งหมด ${totalItems} รายการ (หน้า ${currentPage}/${totalPages} • 20 รายการ/หน้า)`
+          : `Showing ${startIndex}-${endIndex} of ${totalItems} entries (Page ${currentPage}/${totalPages} • 20 items/page)`}
+      </div>
+
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <button
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-white dark:bg-[#2A3038] text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-[#323842] transition-all flex items-center gap-1 font-semibold active:scale-95"
+        >
+          <ChevronLeft size={14} />
+          <span>{lang === 'th' ? 'ก่อนหน้า' : 'Prev'}</span>
+        </button>
+
+        {pageNumbers.map(num => (
+          <button
+            key={num}
+            onClick={() => onPageChange(num)}
+            className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
+              currentPage === num
+                ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/25'
+                : 'border border-slate-200 dark:border-[#2C2E33] bg-white dark:bg-[#2A3038] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#323842]'
+            }`}
+          >
+            {num}
+          </button>
+        ))}
+
+        <button
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-white dark:bg-[#2A3038] text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-[#323842] transition-all flex items-center gap-1 font-semibold active:scale-95"
+        >
+          <span>{lang === 'th' ? 'ถัดไป' : 'Next'}</span>
+          <ChevronRight size={14} />
+        </button>
+      </div>
+    </div>
   );
 };
 
@@ -1049,6 +1227,14 @@ export default function App() {
   const [selectedAdminUser, setSelectedAdminUser] = useState(null);
   const [advisorConsultations, setAdvisorConsultations] = useState(MOCK.advisor.consultations);
   const [newConsultationText, setNewConsultationText] = useState('');
+
+  // Advisor Advisees Search & Pagination (20 per page)
+  const [advisorSearchQuery, setAdvisorSearchQuery] = useState('');
+  const [advisorCurrentPage, setAdvisorCurrentPage] = useState(1);
+
+  // Admin Users Search & Pagination (20 per page)
+  const [adminSearchQuery, setAdminSearchQuery] = useState('');
+  const [adminCurrentPage, setAdminCurrentPage] = useState(1);
 
   const t = I18N[lang];
 
@@ -2166,70 +2352,142 @@ export default function App() {
           })()}
 
           {/* VIEW: Advisor Advisees List */}
-          {currentRoute === '/advisor/students' && (
-            <div id="tour-advisor-students" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-4">{t.adviseesTitle}</h3>
-              <div className="w-full overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                      <th className="p-3">{lang === 'th' ? 'ชื่อ-สกุล' : 'Full Name'}</th>
-                      <th className="p-3">{lang === 'th' ? 'รหัส นศ.' : 'Student ID'}</th>
-                      <th className="p-3">{lang === 'th' ? 'ชั้นปี' : 'Year'}</th>
-                      <th className="p-3">{lang === 'th' ? 'หน่วยกิตสะสม' : 'Earned Credits'}</th>
-                      <th className="p-3">GPA</th>
-                      <th className="p-3">{t.status}</th>
-                      <th className="p-3">{lang === 'th' ? 'การกระทำ' : 'Action'}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {MOCK.advisor.students.map(s => {
-                      const evalStatus = calculateStudentStatus(s, lang);
-                      return (
-                        <tr key={s.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
-                          <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? s.name : s.nameEn}</td>
-                          <td className="p-3 tabular-nums text-slate-500 dark:text-[#A8B4C7]">{s.id}</td>
-                          <td className="p-3">{t.year} {s.year}</td>
-                          <td className="p-3 tabular-nums font-semibold text-slate-800 dark:text-slate-200">{s.creditsEarned}/{s.creditsReq}</td>
-                          <td className="p-3 tabular-nums font-semibold">{s.gpa.toFixed(2)}</td>
-                          <td className="p-3">
-                            <div className="flex flex-col items-start gap-1">
-                              <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${evalStatus.badgeStyle}`}>
-                                {lang === 'th' ? evalStatus.statusText : evalStatus.statusTextEn}
-                              </span>
-                              <div className="text-[11px] tabular-nums">
-                                {evalStatus.creditGap === 0 ? (
-                                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                                    ✓ {lang === 'th' ? `ตามแผน (เป้า ${evalStatus.expectedCredits} นก.)` : `On-track (Target ${evalStatus.expectedCredits} cr.)`}
-                                  </span>
-                                ) : (
-                                  <span className={evalStatus.status === 'danger' ? 'text-red-500 dark:text-red-400 font-medium' : 'text-amber-500 dark:text-amber-400 font-medium'}>
-                                    {lang === 'th' ? `ขาดอีก ${evalStatus.creditGap} นก. (เป้า ${evalStatus.expectedCredits})` : `-${evalStatus.creditGap} cr. (Target ${evalStatus.expectedCredits})`}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3">
-                            <button
-                              onClick={() => {
-                                setSelectedStudentId(s.id);
-                                setCurrentRoute('/advisor/student-detail');
-                              }}
-                              className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold hover:bg-slate-100 dark:hover:bg-[#2A3038] flex items-center gap-1 active:scale-95 transition-transform"
-                            >
-                              <Eye size={14} />
-                              <span>{t.viewDetail}</span>
-                            </button>
+          {currentRoute === '/advisor/students' && (() => {
+            const q = advisorSearchQuery.trim().toLowerCase();
+            const filtered = MOCK.advisor.students.filter(s => {
+              if (!q) return true;
+              return (
+                s.name.toLowerCase().includes(q) ||
+                s.nameEn.toLowerCase().includes(q) ||
+                s.id.includes(q) ||
+                String(s.year).includes(q) ||
+                s.statusText.toLowerCase().includes(q) ||
+                s.statusTextEn.toLowerCase().includes(q)
+              );
+            });
+
+            const pageSize = 20;
+            const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+            const validPage = Math.min(advisorCurrentPage, totalPages);
+            const pagedList = filtered.slice((validPage - 1) * pageSize, validPage * pageSize);
+
+            return (
+              <div id="tour-advisor-students" className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{t.adviseesTitle}</h3>
+                    <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mt-0.5">
+                      {lang === 'th' ? 'รายชื่อนักศึกษาในความดูแลทั้งหมดและสถานะความคืบหน้าการศึกษา' : 'All advisees in your mentorship and their degree progression status'}
+                    </p>
+                  </div>
+
+                  {/* Search bar */}
+                  <div className="relative w-full sm:w-72">
+                    <input
+                      type="text"
+                      value={advisorSearchQuery}
+                      onChange={(e) => {
+                        setAdvisorSearchQuery(e.target.value);
+                        setAdvisorCurrentPage(1);
+                      }}
+                      placeholder={lang === 'th' ? 'ค้นหาชื่อ, รหัส นศ., ชั้นปี...' : 'Search by name, ID, year...'}
+                      className="w-full py-2 pl-9 pr-8 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-slate-800 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    />
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    {advisorSearchQuery && (
+                      <button
+                        onClick={() => {
+                          setAdvisorSearchQuery('');
+                          setAdvisorCurrentPage(1);
+                        }}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        title={lang === 'th' ? 'ล้างการค้นหา' : 'Clear search'}
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                        <th className="p-3">{lang === 'th' ? 'ชื่อ-สกุล' : 'Full Name'}</th>
+                        <th className="p-3">{lang === 'th' ? 'รหัส นศ.' : 'Student ID'}</th>
+                        <th className="p-3">{lang === 'th' ? 'ชั้นปี' : 'Year'}</th>
+                        <th className="p-3">{lang === 'th' ? 'หน่วยกิตสะสม' : 'Earned Credits'}</th>
+                        <th className="p-3">GPA</th>
+                        <th className="p-3">{t.status}</th>
+                        <th className="p-3">{lang === 'th' ? 'การกระทำ' : 'Action'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagedList.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-xs text-slate-500 dark:text-[#A8B4C7]">
+                            {lang === 'th' ? 'ไม่พบข้อมูลนักศึกษาที่ตรงกับคำค้นหา' : 'No students found matching your search.'}
                           </td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      ) : (
+                        pagedList.map(s => {
+                          const evalStatus = calculateStudentStatus(s, lang);
+                          return (
+                            <tr key={s.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
+                              <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? s.name : s.nameEn}</td>
+                              <td className="p-3 tabular-nums text-slate-500 dark:text-[#A8B4C7]">{s.id}</td>
+                              <td className="p-3">{t.year} {s.year}</td>
+                              <td className="p-3 tabular-nums font-semibold text-slate-800 dark:text-slate-200">{s.creditsEarned}/{s.creditsReq}</td>
+                              <td className="p-3 tabular-nums font-semibold">{s.gpa.toFixed(2)}</td>
+                              <td className="p-3">
+                                <div className="flex flex-col items-start gap-1">
+                                  <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${evalStatus.badgeStyle}`}>
+                                    {lang === 'th' ? evalStatus.statusText : evalStatus.statusTextEn}
+                                  </span>
+                                  <div className="text-[11px] tabular-nums">
+                                    {evalStatus.creditGap === 0 ? (
+                                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                                        ✓ {lang === 'th' ? `ตามแผน (เป้า ${evalStatus.expectedCredits} หน่วยกิต)` : `On-track (Target ${evalStatus.expectedCredits} cr.)`}
+                                      </span>
+                                    ) : (
+                                      <span className={evalStatus.status === 'danger' ? 'text-red-500 dark:text-red-400 font-medium' : 'text-amber-500 dark:text-amber-400 font-medium'}>
+                                        {lang === 'th' ? `ขาดอีก ${evalStatus.creditGap} หน่วยกิต (เป้า ${evalStatus.expectedCredits})` : `-${evalStatus.creditGap} cr. (Target ${evalStatus.expectedCredits})`}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="p-3">
+                                <button
+                                  onClick={() => {
+                                    setSelectedStudentId(s.id);
+                                    setCurrentRoute('/advisor/student-detail');
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold hover:bg-slate-100 dark:hover:bg-[#2A3038] flex items-center gap-1 active:scale-95 transition-transform"
+                                >
+                                  <Eye size={14} />
+                                  <span>{t.viewDetail}</span>
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination (20 items/page) */}
+                <PaginationControl
+                  currentPage={validPage}
+                  totalItems={filtered.length}
+                  pageSize={pageSize}
+                  onPageChange={setAdvisorCurrentPage}
+                  lang={lang}
+                />
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* VIEW: Advisor Student Detail (Identical Layout to Student Dashboard) */}
           {currentRoute === '/advisor/student-detail' && (() => {
@@ -2669,17 +2927,66 @@ export default function App() {
             const adminCampusEn = 'Hat Yai Campus';
             const campusUsers = MOCK.admin.users.filter(u => u.campus === adminCampus || u.campusEn === adminCampusEn);
 
+            const q = adminSearchQuery.trim().toLowerCase();
+            const filtered = campusUsers.filter(u => {
+              if (!q) return true;
+              return (
+                u.name.toLowerCase().includes(q) ||
+                u.nameEn.toLowerCase().includes(q) ||
+                u.id.includes(q) ||
+                u.email.toLowerCase().includes(q) ||
+                u.role.toLowerCase().includes(q) ||
+                u.roleEn.toLowerCase().includes(q) ||
+                u.department.toLowerCase().includes(q) ||
+                u.departmentEn.toLowerCase().includes(q)
+              );
+            });
+
+            const pageSize = 20;
+            const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+            const validPage = Math.min(adminCurrentPage, totalPages);
+            const pagedList = filtered.slice((validPage - 1) * pageSize, validPage * pageSize);
+
             return (
-              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-                <div className="mb-4">
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                    {lang === 'th' ? 'จัดการและตรวจสอบผู้ใช้งานระบบ' : 'User Accounts Directory'}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mt-0.5">
-                    {lang === 'th'
-                      ? 'แสดงเฉพาะผู้ใช้งานในวิทยาเขตของคุณตามสิทธิ์ผู้ดูแลระบบ'
-                      : 'Showing only users within your campus scope based on admin privileges'}
-                  </p>
+              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                      {lang === 'th' ? 'จัดการและตรวจสอบผู้ใช้งานระบบ' : 'User Accounts Directory'}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mt-0.5">
+                      {lang === 'th'
+                        ? 'แสดงเฉพาะผู้ใช้งานในวิทยาเขตของคุณตามสิทธิ์ผู้ดูแลระบบ'
+                        : 'Showing only users within your campus scope based on admin privileges'}
+                    </p>
+                  </div>
+
+                  {/* Search bar */}
+                  <div className="relative w-full sm:w-72">
+                    <input
+                      type="text"
+                      value={adminSearchQuery}
+                      onChange={(e) => {
+                        setAdminSearchQuery(e.target.value);
+                        setAdminCurrentPage(1);
+                      }}
+                      placeholder={lang === 'th' ? 'ค้นหาชื่อ, email, หน่วยงาน...' : 'Search by name, email, dept...'}
+                      className="w-full py-2 pl-9 pr-8 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-slate-800 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    />
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    {adminSearchQuery && (
+                      <button
+                        onClick={() => {
+                          setAdminSearchQuery('');
+                          setAdminCurrentPage(1);
+                        }}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        title={lang === 'th' ? 'ล้างการค้นหา' : 'Clear search'}
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="w-full overflow-x-auto">
@@ -2696,44 +3003,61 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {campusUsers.map(u => (
-                        <tr
-                          key={u.id}
-                          onClick={() => {
-                            setSelectedAdminUser(u);
-                            if (u.role === 'นักศึกษา' || u.roleEn === 'Student') setSelectedStudentId(u.id);
-                            setCurrentRoute('/admin/user-detail');
-                          }}
-                          className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer"
-                        >
-                          <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? u.name : u.nameEn}</td>
-                          <td className="p-3 text-xs text-slate-500 dark:text-[#A8B4C7] tabular-nums">{u.email}</td>
-                          <td className="p-3">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                              u.role === 'นักศึกษา' || u.roleEn === 'Student' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-                            }`}>
-                              {lang === 'th' ? u.role : u.roleEn}
-                            </span>
-                          </td>
-                          <td className="p-3 text-xs">
-                            <span className="inline-flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
-                              <Building2 size={13} className="text-blue-500 flex-shrink-0" />
-                              {lang === 'th' ? u.campus : u.campusEn}
-                            </span>
-                          </td>
-                          <td className="p-3 text-xs">{lang === 'th' ? u.department : u.departmentEn}</td>
-                          <td className="p-3 text-xs text-slate-400 tabular-nums">{lang === 'th' ? u.lastLogin : u.lastLoginEn}</td>
-                          <td className="p-3">
-                            <button className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold flex items-center gap-1">
-                              <Eye size={14} />
-                              <span>{t.viewDetail}</span>
-                            </button>
+                      {pagedList.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-xs text-slate-500 dark:text-[#A8B4C7]">
+                            {lang === 'th' ? 'ไม่พบข้อมูลผู้ใช้ที่ตรงกับคำค้นหา' : 'No users found matching your search.'}
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        pagedList.map(u => (
+                          <tr
+                            key={u.id}
+                            onClick={() => {
+                              setSelectedAdminUser(u);
+                              if (u.role === 'นักศึกษา' || u.roleEn === 'Student') setSelectedStudentId(u.id);
+                              setCurrentRoute('/admin/user-detail');
+                            }}
+                            className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer"
+                          >
+                            <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? u.name : u.nameEn}</td>
+                            <td className="p-3 text-xs text-slate-500 dark:text-[#A8B4C7] tabular-nums">{u.email}</td>
+                            <td className="p-3">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                u.role === 'นักศึกษา' || u.roleEn === 'Student' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                              }`}>
+                                {lang === 'th' ? u.role : u.roleEn}
+                              </span>
+                            </td>
+                            <td className="p-3 text-xs">
+                              <span className="inline-flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
+                                <Building2 size={13} className="text-blue-500 flex-shrink-0" />
+                                {lang === 'th' ? u.campus : u.campusEn}
+                              </span>
+                            </td>
+                            <td className="p-3 text-xs">{lang === 'th' ? u.department : u.departmentEn}</td>
+                            <td className="p-3 text-xs text-slate-400 tabular-nums">{lang === 'th' ? u.lastLogin : u.lastLoginEn}</td>
+                            <td className="p-3">
+                              <button className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold flex items-center gap-1 active:scale-95 transition-transform">
+                                <Eye size={14} />
+                                <span>{t.viewDetail}</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
+
+                {/* Pagination (20 items/page) */}
+                <PaginationControl
+                  currentPage={validPage}
+                  totalItems={filtered.length}
+                  pageSize={pageSize}
+                  onPageChange={setAdminCurrentPage}
+                  lang={lang}
+                />
               </div>
             );
           })()}

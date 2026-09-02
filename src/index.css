@@ -30,30 +30,51 @@
 /* Driver.js Custom Styling for PSU Theme */
 .driver-popover {
   font-family: 'Sarabun', system-ui, sans-serif !important;
-  border-radius: 1rem !important;
-  padding: 1.25rem !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid rgba(37, 99, 235, 0.25) !important;
+  border-radius: 1.25rem !important;
+  padding: 1.35rem 1.5rem !important;
+  min-width: 320px !important;
+  max-width: 440px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(37, 99, 235, 0.2) !important;
+  border: 1px solid rgba(37, 99, 235, 0.3) !important;
+  background-color: #ffffff !important;
 }
 
 .driver-popover-title {
-  font-size: 1.125rem !important;
-  font-weight: 700 !important;
-  color: #1e293b !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
   margin-bottom: 0.5rem !important;
+  line-height: 1.4 !important;
 }
 
 .driver-popover-description {
-  font-size: 0.9375rem !important;
-  line-height: 1.6 !important;
+  font-size: 0.925rem !important;
+  line-height: 1.65 !important;
   color: #475569 !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 1.25rem !important;
+}
+
+.driver-popover-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.75rem !important;
+  margin-top: 1rem !important;
+  padding-top: 0.75rem !important;
+  border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
 }
 
 .driver-popover-progress-text {
   font-size: 0.85rem !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   color: #64748b !important;
+  letter-spacing: 0.02em !important;
+}
+
+.driver-popover-navigation-btns, .driver-popover-btn-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
 }
 
 .driver-popover-next-btn, .driver-popover-done-btn {
@@ -61,7 +82,7 @@
   color: #ffffff !important;
   border: none !important;
   border-radius: 0.75rem !important;
-  padding: 0.5rem 1.15rem !important;
+  padding: 0.45rem 1.15rem !important;
   font-size: 0.85rem !important;
   font-weight: 700 !important;
   text-shadow: none !important;
@@ -71,6 +92,7 @@
 
 .driver-popover-next-btn:hover, .driver-popover-done-btn:hover {
   background-color: #1d4ed8 !important;
+  transform: translateY(-1px);
 }
 
 .driver-popover-prev-btn {
@@ -78,11 +100,12 @@
   color: #334155 !important;
   border: 1px solid #cbd5e1 !important;
   border-radius: 0.75rem !important;
-  padding: 0.5rem 1.15rem !important;
+  padding: 0.45rem 1rem !important;
   font-size: 0.85rem !important;
   font-weight: 600 !important;
   text-shadow: none !important;
   cursor: pointer !important;
+  transition: all 0.2s ease !important;
 }
 
 .driver-popover-prev-btn:hover {
@@ -92,6 +115,12 @@
 .driver-popover-close-btn {
   color: #94a3b8 !important;
   cursor: pointer !important;
+  top: 14px !important;
+  right: 14px !important;
+}
+
+.driver-popover-close-btn:hover {
+  color: #475569 !important;
 }
 
 /* Dark mode Driver.js */
@@ -99,6 +128,7 @@ html.dark .driver-popover, [data-theme="dark"] .driver-popover {
   background-color: #1e222d !important;
   border: 1px solid #334155 !important;
   color: #ffffff !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
 }
 
 html.dark .driver-popover-title, [data-theme="dark"] .driver-popover-title {
@@ -109,9 +139,29 @@ html.dark .driver-popover-description, [data-theme="dark"] .driver-popover-descr
   color: #cbd5e1 !important;
 }
 
+html.dark .driver-popover-footer, [data-theme="dark"] .driver-popover-footer {
+  border-top: 1px solid #2c3240 !important;
+}
+
+html.dark .driver-popover-progress-text, [data-theme="dark"] .driver-popover-progress-text {
+  color: #94a3b8 !important;
+}
+
 html.dark .driver-popover-prev-btn, [data-theme="dark"] .driver-popover-prev-btn {
   background-color: #2a3038 !important;
   border-color: #3f4756 !important;
+  color: #cbd5e1 !important;
+}
+
+html.dark .driver-popover-prev-btn:hover, [data-theme="dark"] .driver-popover-prev-btn:hover {
+  background-color: #343c48 !important;
+}
+
+html.dark .driver-popover-close-btn, [data-theme="dark"] .driver-popover-close-btn {
+  color: #64748b !important;
+}
+
+html.dark .driver-popover-close-btn:hover, [data-theme="dark"] .driver-popover-close-btn:hover {
   color: #cbd5e1 !important;
 }
 

@@ -723,131 +723,130 @@ const DonutProgressChart = ({ studentData, lang = 'th', hoveredSegment, setHover
   const totalReq = studentData.totalCreditsRequired || 132;
   const earnedTotal = studentData.creditsEarned;
   const C = 615.75; // 2 * PI * 98
+  const cx = 240;
+  const cy = 160;
+  const r = 98;
 
-  const catGen = studentData.categories.find(c => c.id === 'gen-ed') || { earned: 30, required: 30 };
-  const catReq = studentData.categories.find(c => c.id === 'core-req') || { earned: 54, required: 72 };
-  const catElec = studentData.categories.find(c => c.id === 'core-elec') || { earned: 12, required: 24 };
-  const catFree = studentData.categories.find(c => c.id === 'free-elec') || { earned: 3, required: 6 };
+  const categoriesConfig = [
+    { id: 'gen-ed', color: '#16A34A', nameTh: 'ศึกษาทั่วไป', nameEn: 'Gen-Ed' },
+    { id: 'core-req', color: '#2563EB', nameTh: 'เฉพาะบังคับ', nameEn: 'Core Req' },
+    { id: 'core-elec', color: '#9333EA', nameTh: 'เฉพาะเลือก', nameEn: 'Core Elec' },
+    { id: 'free-elec', color: '#EA580C', nameTh: 'เลือกเสรี', nameEn: 'Free Elec' }
+  ];
 
-  const dashGen = (catGen.earned / totalReq) * C;
-  const dashReq = (catReq.earned / totalReq) * C;
-  const dashElec = (catElec.earned / totalReq) * C;
-  const dashFree = (catFree.earned / totalReq) * C;
+  let accumulatedDeg = -90; // starts at 12 o'clock
 
-  const offGen = 0;
-  const offReq = -dashGen;
-  const offElec = -(dashGen + dashReq);
-  const offFree = -(dashGen + dashReq + dashElec);
+  const segments = categoriesConfig.map(cfg => {
+    const cat = studentData.categories.find(c => c.id === cfg.id) || { earned: 0, required: 0 };
+    const spanDeg = totalReq > 0 ? (cat.earned / totalReq) * 360 : 0;
+    const startDeg = accumulatedDeg;
+    const midDeg = accumulatedDeg + spanDeg / 2;
+    const endDeg = accumulatedDeg + spanDeg;
+    accumulatedDeg = endDeg;
+
+    const dash = totalReq > 0 ? (cat.earned / totalReq) * C : 0;
+    const offset = -(startDeg + 90) * (C / 360);
+
+    const rad = (midDeg * Math.PI) / 180;
+    const dotX = cx + r * Math.cos(rad);
+    const dotY = cy + r * Math.sin(rad);
+
+    const isRight = dotX >= cx;
+    const isTop = dotY < cy;
+
+    const boxWidth = 96;
+    const boxHeight = 36;
+
+    let elbowX = isRight ? dotX + 22 : dotX - 22;
+    let elbowY = isTop ? Math.max(34, dotY - 18) : Math.min(286, dotY + 18);
+    let lineEndX = isRight ? elbowX + 14 : elbowX - 14;
+
+    let boxX = isRight ? lineEndX + 4 : lineEndX - boxWidth - 4;
+    if (boxX < 6) {
+      boxX = 6;
+      lineEndX = boxX + boxWidth + 4;
+      elbowX = lineEndX - 14;
+    }
+    if (boxX + boxWidth > 474) {
+      boxX = 474 - boxWidth;
+      lineEndX = boxX - 4;
+      elbowX = lineEndX + 14;
+    }
+    const boxY = elbowY - boxHeight / 2;
+
+    return {
+      id: cfg.id,
+      nameTh: cfg.nameTh,
+      nameEn: cfg.nameEn,
+      color: cfg.color,
+      earned: cat.earned,
+      required: cat.required,
+      dash,
+      offset,
+      dotX,
+      dotY,
+      elbowX,
+      elbowY,
+      lineEndX,
+      boxX,
+      boxY,
+      boxWidth,
+      boxHeight
+    };
+  });
 
   const percentTotal = ((earnedTotal / totalReq) * 100).toFixed(1);
 
   return (
     <div className="w-full flex flex-col items-center">
-      <div className="relative w-full max-w-[480px] h-72 sm:h-80 flex items-center justify-center my-2">
-        <svg className="w-full h-full overflow-visible" viewBox="0 0 460 320" style={{ fontFamily: "'Sarabun', sans-serif" }}>
+      <div className="relative w-full max-w-[480px] h-72 sm:h-80 flex items-center justify-center my-2 select-none">
+        <svg className="w-full h-full overflow-visible" viewBox="0 0 480 320" style={{ fontFamily: "'Sarabun', sans-serif" }}>
           {/* Base Track */}
           <circle
-            cx="230"
-            cy="160"
-            r="98"
+            cx={cx}
+            cy={cy}
+            r={r}
             fill="transparent"
             stroke="currentColor"
             className="text-slate-200 dark:text-slate-700/60"
             strokeWidth="22"
             style={{
-              opacity: hoveredSegment ? 0.35 : 1,
+              opacity: hoveredSegment ? 0.3 : 1,
               transition: 'opacity 200ms ease'
             }}
           />
 
-          {/* Segment 1: Gen-ed (Emerald) */}
-          <circle
-            cx="230"
-            cy="160"
-            r="98"
-            fill="transparent"
-            stroke="#16A34A"
-            strokeWidth={hoveredSegment === 'gen-ed' ? 26 : 22}
-            strokeDasharray={`${dashGen} ${C}`}
-            strokeDashoffset={`${offGen}`}
-            transform="rotate(-90 230 160)"
-            style={{
-              cursor: 'pointer',
-              opacity: !hoveredSegment || hoveredSegment === 'gen-ed' ? 1 : 0.22,
-              filter: hoveredSegment === 'gen-ed' ? 'drop-shadow(0 4px 14px rgba(22, 163, 74, 0.45))' : 'none',
-              transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={() => setHoveredSegment('gen-ed')}
-            onMouseLeave={() => setHoveredSegment(null)}
-          />
-
-          {/* Segment 2: Core-req (Royal Blue) */}
-          <circle
-            cx="230"
-            cy="160"
-            r="98"
-            fill="transparent"
-            stroke="#2563EB"
-            strokeWidth={hoveredSegment === 'core-req' ? 26 : 22}
-            strokeDasharray={`${dashReq} ${C}`}
-            strokeDashoffset={`${offReq}`}
-            transform="rotate(-90 230 160)"
-            style={{
-              cursor: 'pointer',
-              opacity: !hoveredSegment || hoveredSegment === 'core-req' ? 1 : 0.22,
-              filter: hoveredSegment === 'core-req' ? 'drop-shadow(0 4px 14px rgba(37, 99, 235, 0.45))' : 'none',
-              transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={() => setHoveredSegment('core-req')}
-            onMouseLeave={() => setHoveredSegment(null)}
-          />
-
-          {/* Segment 3: Core-elec (Vivid Purple) */}
-          <circle
-            cx="230"
-            cy="160"
-            r="98"
-            fill="transparent"
-            stroke="#9333EA"
-            strokeWidth={hoveredSegment === 'core-elec' ? 26 : 22}
-            strokeDasharray={`${dashElec} ${C}`}
-            strokeDashoffset={`${offElec}`}
-            transform="rotate(-90 230 160)"
-            style={{
-              cursor: 'pointer',
-              opacity: !hoveredSegment || hoveredSegment === 'core-elec' ? 1 : 0.22,
-              filter: hoveredSegment === 'core-elec' ? 'drop-shadow(0 4px 14px rgba(147, 51, 234, 0.45))' : 'none',
-              transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={() => setHoveredSegment('core-elec')}
-            onMouseLeave={() => setHoveredSegment(null)}
-          />
-
-          {/* Segment 4: Free-elec (Warm Tangerine) */}
-          <circle
-            cx="230"
-            cy="160"
-            r="98"
-            fill="transparent"
-            stroke="#EA580C"
-            strokeWidth={hoveredSegment === 'free-elec' ? 26 : 22}
-            strokeDasharray={`${dashFree} ${C}`}
-            strokeDashoffset={`${offFree}`}
-            transform="rotate(-90 230 160)"
-            style={{
-              cursor: 'pointer',
-              opacity: !hoveredSegment || hoveredSegment === 'free-elec' ? 1 : 0.22,
-              filter: hoveredSegment === 'free-elec' ? 'drop-shadow(0 4px 14px rgba(234, 88, 12, 0.45))' : 'none',
-              transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={() => setHoveredSegment('free-elec')}
-            onMouseLeave={() => setHoveredSegment(null)}
-          />
+          {/* Dynamic Category Segments */}
+          {segments.map(seg => {
+            const isHovered = hoveredSegment === seg.id;
+            return (
+              <circle
+                key={seg.id}
+                cx={cx}
+                cy={cy}
+                r={r}
+                fill="transparent"
+                stroke={seg.color}
+                strokeWidth={isHovered ? 24 : 22}
+                strokeDasharray={`${seg.dash} ${C}`}
+                strokeDashoffset={`${seg.offset}`}
+                transform={`rotate(-90 ${cx} ${cy})`}
+                style={{
+                  cursor: 'pointer',
+                  opacity: !hoveredSegment || isHovered ? 1 : 0.22,
+                  filter: isHovered ? `drop-shadow(0 4px 12px ${seg.color}66)` : 'none',
+                  transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+                onMouseEnter={() => setHoveredSegment(seg.id)}
+                onMouseLeave={() => setHoveredSegment(null)}
+              />
+            );
+          })}
 
           {/* Center Typography */}
           <text
-            x="230"
-            y="150"
+            x={cx}
+            y={cy - 10}
             textAnchor="middle"
             dominantBaseline="central"
             className="fill-slate-900 dark:fill-white font-extrabold text-4xl tabular-nums pointer-events-none select-none"
@@ -855,8 +854,8 @@ const DonutProgressChart = ({ studentData, lang = 'th', hoveredSegment, setHover
             {percentTotal}%
           </text>
           <text
-            x="230"
-            y="184"
+            x={cx}
+            y={cy + 24}
             textAnchor="middle"
             dominantBaseline="central"
             className="fill-slate-500 dark:fill-[#A8B4C7] font-semibold text-sm tabular-nums pointer-events-none select-none"
@@ -864,77 +863,55 @@ const DonutProgressChart = ({ studentData, lang = 'th', hoveredSegment, setHover
             {earnedTotal} / {totalReq} {lang === 'th' ? 'หน่วยกิต' : 'Credits'}
           </text>
 
-          {/* Leader Line Callouts: Visible only when hovered */}
-          <g
-            style={{
-              opacity: hoveredSegment === 'gen-ed' ? 1 : 0,
-              transform: hoveredSegment === 'gen-ed' ? 'none' : 'translateX(6px)',
-              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: hoveredSegment === 'gen-ed' ? 'auto' : 'none'
-            }}
-          >
-            <circle cx="310" cy="104" r="5" fill="#16A34A" />
-            <polyline points="310,104 346,80 366,80" fill="none" stroke="#16A34A" strokeWidth="2.2" />
-            <rect x="368" y="62" width="88" height="36" rx="8" className="fill-white dark:fill-[#191C24] stroke-[#16A34A]" strokeWidth="1.4" />
-            <text x="376" y="76" fill="#16A34A" fontSize="11" fontWeight="700">{lang === 'th' ? 'ศึกษาทั่วไป' : 'Gen-Ed'}</text>
-            <text x="376" y="90" className="fill-slate-800 dark:fill-slate-100 font-semibold text-[10px] tabular-nums">{catGen.earned} / {catGen.required} {lang === 'th' ? 'หน่วยกิต' : 'cr.'}</text>
-          </g>
-
-          <g
-            style={{
-              opacity: hoveredSegment === 'core-req' ? 1 : 0,
-              transform: hoveredSegment === 'core-req' ? 'none' : 'translateX(6px)',
-              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: hoveredSegment === 'core-req' ? 'auto' : 'none'
-            }}
-          >
-            <circle cx="298" cy="228" r="5" fill="#2563EB" />
-            <polyline points="298,228 334,248 354,248" fill="none" stroke="#2563EB" strokeWidth="2.2" />
-            <rect x="356" y="230" width="94" height="36" rx="8" className="fill-white dark:fill-[#191C24] stroke-[#2563EB]" strokeWidth="1.4" />
-            <text x="364" y="244" fill="#2563EB" fontSize="11" fontWeight="700">{lang === 'th' ? 'เฉพาะบังคับ' : 'Core Req'}</text>
-            <text x="364" y="258" className="fill-slate-800 dark:fill-slate-100 font-semibold text-[10px] tabular-nums">{catReq.earned} / {catReq.required} {lang === 'th' ? 'หน่วยกิต' : 'cr.'}</text>
-          </g>
-
-          <g
-            style={{
-              opacity: hoveredSegment === 'core-elec' ? 1 : 0,
-              transform: hoveredSegment === 'core-elec' ? 'none' : 'translateX(-6px)',
-              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: hoveredSegment === 'core-elec' ? 'auto' : 'none'
-            }}
-          >
-            <circle cx="156" cy="222" r="5" fill="#9333EA" />
-            <polyline points="156,222 120,245 100,245" fill="none" stroke="#9333EA" strokeWidth="2.2" />
-            <rect x="10" y="227" width="88" height="36" rx="8" className="fill-white dark:fill-[#191C24] stroke-[#9333EA]" strokeWidth="1.4" />
-            <text x="18" y="241" fill="#9333EA" fontSize="11" fontWeight="700">{lang === 'th' ? 'เฉพาะเลือก' : 'Elective'}</text>
-            <text x="18" y="255" className="fill-slate-800 dark:fill-slate-100 font-semibold text-[10px] tabular-nums">{catElec.earned} / {catElec.required} {lang === 'th' ? 'หน่วยกิต' : 'cr.'}</text>
-          </g>
-
-          <g
-            style={{
-              opacity: hoveredSegment === 'free-elec' ? 1 : 0,
-              transform: hoveredSegment === 'free-elec' ? 'none' : 'translateX(-6px)',
-              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-              pointerEvents: hoveredSegment === 'free-elec' ? 'auto' : 'none'
-            }}
-          >
-            <circle cx="134" cy="173" r="5" fill="#EA580C" />
-            <polyline points="134,173 100,155 80,155" fill="none" stroke="#EA580C" strokeWidth="2.2" />
-            <rect x="6" y="137" width="72" height="36" rx="8" className="fill-white dark:fill-[#191C24] stroke-[#EA580C]" strokeWidth="1.4" />
-            <text x="14" y="151" fill="#EA580C" fontSize="11" fontWeight="700">{lang === 'th' ? 'เลือกเสรี' : 'Free Elec'}</text>
-            <text x="14" y="165" className="fill-slate-800 dark:fill-slate-100 font-semibold text-[10px] tabular-nums">{catFree.earned} / {catFree.required} {lang === 'th' ? 'หน่วยกิต' : 'cr.'}</text>
-          </g>
+          {/* Dynamic Callouts for Hovered Segment */}
+          {segments.map(seg => {
+            const isHovered = hoveredSegment === seg.id;
+            return (
+              <g
+                key={seg.id}
+                style={{
+                  opacity: isHovered ? 1 : 0,
+                  transform: isHovered ? 'scale(1)' : 'scale(0.96)',
+                  transformOrigin: `${seg.dotX}px ${seg.dotY}px`,
+                  transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                  pointerEvents: isHovered ? 'auto' : 'none'
+                }}
+              >
+                <circle cx={seg.dotX} cy={seg.dotY} r="4.5" fill={seg.color} stroke="#ffffff" strokeWidth="1.5" />
+                <polyline
+                  points={`${seg.dotX},${seg.dotY} ${seg.elbowX},${seg.elbowY} ${seg.lineEndX},${seg.elbowY}`}
+                  fill="none"
+                  stroke={seg.color}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <rect
+                  x={seg.boxX}
+                  y={seg.boxY}
+                  width={seg.boxWidth}
+                  height={seg.boxHeight}
+                  rx="8"
+                  className="fill-white dark:fill-[#191C24]"
+                  stroke={seg.color}
+                  strokeWidth="1.5"
+                  style={{ filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.12))' }}
+                />
+                <text x={seg.boxX + 8} y={seg.boxY + 14} fill={seg.color} fontSize="11" fontWeight="700">
+                  {lang === 'th' ? seg.nameTh : seg.nameEn}
+                </text>
+                <text x={seg.boxX + 8} y={seg.boxY + 28} className="fill-slate-800 dark:fill-slate-100 font-bold text-[11px] tabular-nums">
+                  {seg.earned} / {seg.required} {lang === 'th' ? 'หน่วยกิต' : 'cr.'}
+                </text>
+              </g>
+            );
+          })}
         </svg>
       </div>
 
       {/* Color Legend with interactive hover */}
       <div className="grid grid-cols-2 gap-2 w-full text-left text-xs mb-3 p-2.5 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33]">
-        {[
-          { id: 'gen-ed', color: '#16A34A', labelTh: `ศึกษาทั่วไป (${catGen.earned} หน่วยกิต)`, labelEn: `Gen-Ed (${catGen.earned} cr.)` },
-          { id: 'core-req', color: '#2563EB', labelTh: `เฉพาะบังคับ (${catReq.earned} หน่วยกิต)`, labelEn: `Core Req (${catReq.earned} cr.)` },
-          { id: 'core-elec', color: '#9333EA', labelTh: `เฉพาะเลือก (${catElec.earned} หน่วยกิต)`, labelEn: `Elective (${catElec.earned} cr.)` },
-          { id: 'free-elec', color: '#EA580C', labelTh: `เลือกเสรี (${catFree.earned} หน่วยกิต)`, labelEn: `Free Elec (${catFree.earned} cr.)` }
-        ].map(item => {
+        {segments.map(item => {
           const isHovered = hoveredSegment === item.id;
           const isOtherHovered = hoveredSegment && hoveredSegment !== item.id;
           return (
@@ -957,7 +934,7 @@ const DonutProgressChart = ({ studentData, lang = 'th', hoveredSegment, setHover
                 }}
               />
               <span className="truncate font-medium text-slate-800 dark:text-slate-100">
-                {lang === 'th' ? item.labelTh : item.labelEn}
+                {lang === 'th' ? `${item.nameTh} (${item.earned} หน่วยกิต)` : `${item.nameEn} (${item.earned} cr.)`}
               </span>
             </div>
           );
@@ -2559,7 +2536,7 @@ export default function App() {
             const periodData = MOCK.admin.statsByPeriod[statsPeriod];
             return (
               <div id="tour-admin-stats" className="flex flex-col gap-5">
-                <div className="flex justify-between items-center flex-wrap gap-2">
+                <div className="flex justify-start items-center flex-wrap gap-2">
                   <div className="flex gap-1 bg-slate-200 dark:bg-[#2A3038] p-1 rounded-xl">
                     {['daily', 'weekly', 'monthly', 'term', 'year'].map(p => (
                       <button
@@ -2573,10 +2550,6 @@ export default function App() {
                       </button>
                     ))}
                   </div>
-                  <span className="text-xs text-slate-500 dark:text-[#A8B4C7] font-medium flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                    {lang === 'th' ? 'สถิติอัปเดตแบบเรียลไทม์' : 'Real-time telemetry'}
-                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">

@@ -372,15 +372,15 @@ const MOCK = {
       { id: "c3", nameTh: "วิศวกรรมศาสตรบัณฑิต สาขาวิชาวิศวกรรมคอมพิวเตอร์", nameEn: "B.Eng. in Computer Engineering", level: "ปริญญาตรี", levelEn: "Bachelor's", faculty: "คณะวิศวกรรมศาสตร์", facultyEn: "Faculty of Engineering", year: "2566", credits: 140, status: "active" }
     ],
     users: [
-      { id: "6710110001", name: "นายสมชาย ใจดี", nameEn: "Mr. Somchai Jaidee", email: "somchai.j@psu.ac.th", role: "นักศึกษา", roleEn: "Student", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "1 ก.ย. 2569 21:30" },
-      { id: "6710110002", name: "นางสาวปิยะนุช แก้วมณี", nameEn: "Ms. Piyanuch Kaewmanee", email: "piyanuch.k@psu.ac.th", role: "นักศึกษา", roleEn: "Student", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "1 ก.ย. 2569 19:40" },
-      { id: "6610110024", name: "นายอนุชา บุญเรือง", nameEn: "Mr. Anucha Boonruang", email: "anucha.b@psu.ac.th", role: "นักศึกษา", roleEn: "Student", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "30 ส.ค. 2569 11:20" },
-      { id: "u2", name: "ผศ.ดร.วิชัย ทองสุข", nameEn: "Asst. Prof. Dr. Wichai Thongsuk", email: "wichai.t@psu.ac.th", role: "อาจารย์", roleEn: "Advisor", department: "ภาควิชาวิทยาการคอมพิวเตอร์", departmentEn: "Dept. of Computer Science", lastLogin: "1 ก.ย. 2569 20:15" },
-      { id: "u3", name: "นายสมศักดิ์ แอดมิน", nameEn: "Mr. Somsak Admin", email: "somsak.admin@psu.ac.th", role: "ผู้ดูแลระบบ", roleEn: "Admin", department: "สำนักนวัตกรรมดิจิทัล", departmentEn: "Digital Innovation Office", lastLogin: "1 ก.ย. 2569 21:45" }
+      { id: "6710110001", name: "นายสมชาย ใจดี", nameEn: "Mr. Somchai Jaidee", email: "somchai.j@psu.ac.th", role: "นักศึกษา", roleEn: "Student", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "1 ก.ย. 2569 21:30", lastLoginEn: "1 Sep 2026 21:30" },
+      { id: "6710110002", name: "นางสาวปิยะนุช แก้วมณี", nameEn: "Ms. Piyanuch Kaewmanee", email: "piyanuch.k@psu.ac.th", role: "นักศึกษา", roleEn: "Student", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "1 ก.ย. 2569 19:40", lastLoginEn: "1 Sep 2026 19:40" },
+      { id: "6610110024", name: "นายอนุชา บุญเรือง", nameEn: "Mr. Anucha Boonruang", email: "anucha.b@psu.ac.th", role: "นักศึกษา", roleEn: "Student", department: "คณะวิทยาศาสตร์", departmentEn: "Faculty of Science", lastLogin: "30 ส.ค. 2569 11:20", lastLoginEn: "30 Aug 2026 11:20" },
+      { id: "u2", name: "ผศ.ดร.วิชัย ทองสุข", nameEn: "Asst. Prof. Dr. Wichai Thongsuk", email: "wichai.t@psu.ac.th", role: "อาจารย์", roleEn: "Advisor", department: "ภาควิชาวิทยาการคอมพิวเตอร์", departmentEn: "Dept. of Computer Science", lastLogin: "1 ก.ย. 2569 20:15", lastLoginEn: "1 Sep 2026 20:15" },
+      { id: "u3", name: "นายสมศักดิ์ แอดมิน", nameEn: "Mr. Somsak Admin", email: "somsak.admin@psu.ac.th", role: "ผู้ดูแลระบบ", roleEn: "Admin", department: "สำนักนวัตกรรมดิจิทัล", departmentEn: "Digital Innovation Office", lastLogin: "1 ก.ย. 2569 21:45", lastLoginEn: "1 Sep 2026 21:45" }
     ],
     logs: [
-      { id: "l1", time: "01/09/2569 21:45:10", user: "somsak.admin@psu.ac.th", role: "ผู้ดูแลระบบ", action: "แก้ไขหลักสูตร", target: "วท.บ. วิทยาการคอมพิวเตอร์ 2567", ip: "192.168.1.104" },
-      { id: "l2", time: "01/09/2569 21:30:22", user: "somchai.j@psu.ac.th", role: "นักศึกษา", action: "ส่งออกรายงาน PDF", target: "รายงานตรวจสอบหน่วยกิตสะสม", ip: "10.24.50.88" }
+      { id: "l1", time: "01/09/2569 21:45:10", timeEn: "01/09/2026 21:45:10", user: "somsak.admin@psu.ac.th", role: "ผู้ดูแลระบบ", roleEn: "Admin", action: "แก้ไขหลักสูตร", actionEn: "Update Curriculum", target: "วท.บ. วิทยาการคอมพิวเตอร์ 2567", targetEn: "B.Sc. Computer Science 2024", ip: "192.168.1.104" },
+      { id: "l2", time: "01/09/2569 21:30:22", timeEn: "01/09/2026 21:30:22", user: "somchai.j@psu.ac.th", role: "นักศึกษา", roleEn: "Student", action: "ส่งออกรายงาน PDF", actionEn: "Export PDF Report", target: "รายงานตรวจสอบหน่วยกิตสะสม", targetEn: "Academic Credit Audit Report", ip: "10.24.50.88" }
     ]
   }
 };
@@ -1459,7 +1459,7 @@ export default function App() {
             {!isCollapsed && (
               <div className="overflow-hidden whitespace-nowrap">
                 <div className="text-sm font-bold text-blue-600 dark:text-blue-400">Credit Checker</div>
-                <div className="text-xs text-slate-500 dark:text-[#A8B4C7]">ม.สงขลานครินทร์</div>
+                <div className="text-xs text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? 'ม.สงขลานครินทร์' : 'Prince of Songkla Univ.'}</div>
               </div>
             )}
           </div>
@@ -2543,7 +2543,15 @@ export default function App() {
                           statsPeriod === p ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-700 dark:text-slate-300'
                         }`}
                       >
-                        {p === 'daily' ? 'รายวัน' : p === 'weekly' ? 'รายสัปดาห์' : p === 'monthly' ? 'รายเดือน' : p === 'term' ? 'รายภาค' : 'รายปี'}
+                        {p === 'daily'
+                          ? (lang === 'th' ? 'รายวัน' : 'Daily')
+                          : p === 'weekly'
+                          ? (lang === 'th' ? 'รายสัปดาห์' : 'Weekly')
+                          : p === 'monthly'
+                          ? (lang === 'th' ? 'รายเดือน' : 'Monthly')
+                          : p === 'term'
+                          ? (lang === 'th' ? 'รายภาค' : 'Term')
+                          : (lang === 'th' ? 'รายปี' : 'Year')}
                       </button>
                     ))}
                   </div>
@@ -2575,7 +2583,9 @@ export default function App() {
                       <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-1">
                         {lang === 'th' ? 'สัดส่วนการใช้งานแยกตาม 5 วิทยาเขต ม.อ.' : 'PSU Campuses Usage'}
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mb-4">จำนวนการตรวจสอบสะสม</p>
+                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mb-4">
+                        {lang === 'th' ? 'จำนวนการตรวจสอบสะสม' : 'Total Cumulative Checks'}
+                      </p>
                     </div>
                     <div className="flex flex-col gap-3">
                       {MOCK.admin.campusStats.map(c => (
@@ -2600,7 +2610,9 @@ export default function App() {
                       <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-1">
                         {lang === 'th' ? 'สถิติการตรวจสอบหน่วยกิตแยกตามคณะ' : 'Checks by Faculty'}
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mb-4">คณะที่มีการตรวจสอบสูงสุด</p>
+                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mb-4">
+                        {lang === 'th' ? 'คณะที่มีการตรวจสอบสูงสุด' : 'Faculties with Highest Checks'}
+                      </p>
                     </div>
                     <div className="flex flex-col gap-2.5">
                       {MOCK.admin.facultyStats.map(f => (
@@ -2652,13 +2664,13 @@ export default function App() {
                         <td className="p-3 text-xs text-slate-500 dark:text-[#A8B4C7] tabular-nums">{u.email}</td>
                         <td className="p-3">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            u.role === 'นักศึกษา' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600'
+                            u.role === 'นักศึกษา' || u.roleEn === 'Student' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
                           }`}>
                             {lang === 'th' ? u.role : u.roleEn}
                           </span>
                         </td>
                         <td className="p-3 text-xs">{lang === 'th' ? u.department : u.departmentEn}</td>
-                        <td className="p-3 text-xs text-slate-400 tabular-nums">{u.lastLogin}</td>
+                        <td className="p-3 text-xs text-slate-400 tabular-nums">{lang === 'th' ? u.lastLogin : u.lastLoginEn}</td>
                         <td className="p-3">
                           <button className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold flex items-center gap-1">
                             <Eye size={14} />
@@ -2690,7 +2702,7 @@ export default function App() {
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40">
                       <UserCog size={14} />
-                      {lang === 'th' ? `โหมดผู้ดูแลระบบ — ตรวจสอบ ${user.name}` : `Admin Audit — ${user.name}`}
+                      {lang === 'th' ? `โหมดผู้ดูแลระบบ — ตรวจสอบ ${user.name}` : `Admin Audit — ${user.nameEn || user.name}`}
                     </span>
                     <button
                       onClick={() => setIsPdfOpen(true)}
@@ -2708,20 +2720,24 @@ export default function App() {
                     <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 flex items-center justify-center font-bold text-xl flex-shrink-0">
                       {lang === 'th'
                         ? (user.name ? user.name.replace(/^(นาย|นางสาว|นาง|ดร\.|ผศ\.ดร\.)\s*/, '').slice(0, 2) : 'นศ')
-                        : (user.name ? user.name.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.|Asst\. Prof\.)\s*/, '').slice(0, 2).toUpperCase() : 'US')}
+                        : (user.nameEn ? user.nameEn.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.|Asst\. Prof\.)\s*/, '').slice(0, 2).toUpperCase() : 'US')}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{user.name}</h2>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                          {lang === 'th' ? user.name : user.nameEn}
+                        </h2>
                         <span className="tabular-nums font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#2A3038] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#2C2E33]">
                           {user.id}
                         </span>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 capitalize">
-                          {user.role}
+                          {lang === 'th' ? user.role : user.roleEn}
                         </span>
                       </div>
                       <p className="text-xs sm:text-sm text-slate-500 dark:text-[#A8B4C7] mt-0.5">
-                        {user.faculty || (lang === 'th' ? activeStudentData.curriculum : activeStudentData.curriculumEn)}
+                        {lang === 'th'
+                          ? (user.department || activeStudentData.curriculum)
+                          : (user.departmentEn || activeStudentData.curriculumEn)}
                       </p>
                       <div className="text-xs text-slate-700 dark:text-slate-300 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
                         <span>{t.gpa}: <strong className="tabular-nums text-blue-600 dark:text-blue-400 text-sm font-extrabold">{activeStudentData.gpa.toFixed(2)}</strong></span>
@@ -2736,7 +2752,7 @@ export default function App() {
                       {lang === 'th' ? 'หน่วยกิตสะสม' : 'Earned Credits'}
                     </span>
                     <div className="tabular-nums text-base sm:text-lg font-extrabold text-blue-600 dark:text-blue-400">
-                      {activeStudentData.creditsEarned} <span className="text-xs font-medium text-slate-400">/ {activeStudentData.totalCreditsRequired}</span>
+                      {activeStudentData.creditsEarned} <span className="text-xs font-medium text-slate-400">/ {activeStudentData.totalCreditsRequired} {t.credits}</span>
                     </div>
                   </div>
                 </div>
@@ -2768,24 +2784,26 @@ export default function App() {
           {/* VIEW: Curriculums & Logs */}
           {currentRoute === '/admin/curriculums' && (
             <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">จัดการหลักสูตร</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">
+                {lang === 'th' ? 'จัดการโครงสร้างหลักสูตร' : 'Curriculum Structure Management'}
+              </h3>
               <div className="w-full overflow-x-auto">
                 <table className="w-full text-left border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-[#2A3038]">
-                      <th className="p-3">ชื่อหลักสูตร</th>
-                      <th className="p-3">ระดับ</th>
-                      <th className="p-3">คณะ</th>
-                      <th className="p-3">หน่วยกิต</th>
+                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                      <th className="p-3">{lang === 'th' ? 'ชื่อหลักสูตร' : 'Curriculum Name'}</th>
+                      <th className="p-3">{lang === 'th' ? 'ระดับ' : 'Degree Level'}</th>
+                      <th className="p-3">{lang === 'th' ? 'คณะ' : 'Faculty'}</th>
+                      <th className="p-3">{t.credits}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {MOCK.admin.curriculums.map(c => (
-                      <tr key={c.id} className="border-b border-slate-100 dark:border-[#2C2E33]">
-                        <td className="p-3 font-medium">{c.nameTh}</td>
-                        <td className="p-3">{c.level}</td>
-                        <td className="p-3">{c.faculty}</td>
-                        <td className="p-3 tabular-nums">{c.credits}</td>
+                      <tr key={c.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
+                        <td className="p-3 font-medium text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
+                        <td className="p-3 text-xs">{lang === 'th' ? c.level : c.levelEn}</td>
+                        <td className="p-3 text-xs">{lang === 'th' ? c.faculty : c.facultyEn}</td>
+                        <td className="p-3 tabular-nums font-semibold">{c.credits}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -2796,24 +2814,26 @@ export default function App() {
 
           {currentRoute === '/admin/logs' && (
             <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">บันทึกการใช้งานระบบ</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">
+                {lang === 'th' ? 'บันทึกประวัติการใช้งานระบบ (System Logs)' : 'System Audit & Activity Logs'}
+              </h3>
               <div className="w-full overflow-x-auto">
                 <table className="w-full text-left border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-[#2A3038]">
-                      <th className="p-3">เวลา</th>
-                      <th className="p-3">ผู้ใช้</th>
-                      <th className="p-3">การกระทำ</th>
-                      <th className="p-3">รายการ</th>
+                    <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                      <th className="p-3">{lang === 'th' ? 'เวลา' : 'Timestamp'}</th>
+                      <th className="p-3">{lang === 'th' ? 'ผู้ใช้งาน' : 'User'}</th>
+                      <th className="p-3">{lang === 'th' ? 'การกระทำ' : 'Action'}</th>
+                      <th className="p-3">{lang === 'th' ? 'รายละเอียด' : 'Details'}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {MOCK.admin.logs.map(l => (
-                      <tr key={l.id} className="border-b border-slate-100 dark:border-[#2C2E33]">
-                        <td className="p-3 text-xs tabular-nums text-slate-400">{l.time}</td>
-                        <td className="p-3 font-semibold text-xs">{l.user}</td>
-                        <td className="p-3 text-xs font-bold text-blue-600">{l.action}</td>
-                        <td className="p-3 text-xs">{l.target}</td>
+                      <tr key={l.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
+                        <td className="p-3 text-xs tabular-nums text-slate-400">{lang === 'th' ? l.time : l.timeEn}</td>
+                        <td className="p-3 font-semibold text-xs text-slate-800 dark:text-white">{l.user}</td>
+                        <td className="p-3 text-xs font-bold text-blue-600 dark:text-blue-400">{lang === 'th' ? l.action : l.actionEn}</td>
+                        <td className="p-3 text-xs text-slate-700 dark:text-slate-300">{lang === 'th' ? l.target : l.targetEn}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -422,30 +422,30 @@ const ThemeSwitch = ({ theme, toggleTheme, lang = 'th' }) => {
       onClick={toggleTheme}
       title={label}
       aria-label={label}
-      className={`relative inline-flex h-9 w-16 shrink-0 cursor-pointer items-center rounded-full p-1 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner select-none ${
+      className={`relative inline-flex h-[38px] w-[76px] shrink-0 cursor-pointer items-center rounded-full p-[3px] transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner select-none ${
         isDark
           ? 'bg-slate-800 border border-slate-700 hover:border-blue-400'
           : 'bg-slate-200/90 border border-slate-300 hover:border-blue-400'
       }`}
     >
       {/* Background Icons */}
-      <span className="absolute left-1.5 flex items-center justify-center text-amber-500 transition-opacity duration-200 pointer-events-none">
-        <Sun size={13} className={isDark ? 'opacity-30' : 'opacity-90'} />
+      <span className="absolute left-[8px] flex items-center justify-center text-amber-500 transition-opacity duration-200 pointer-events-none">
+        <Sun size={17} className={isDark ? 'opacity-35' : 'opacity-90'} />
       </span>
-      <span className="absolute right-1.5 flex items-center justify-center text-blue-400 transition-opacity duration-200 pointer-events-none">
-        <Moon size={13} className={isDark ? 'opacity-90' : 'opacity-30'} />
+      <span className="absolute right-[8px] flex items-center justify-center text-indigo-400 transition-opacity duration-200 pointer-events-none">
+        <Moon size={17} className={isDark ? 'opacity-90' : 'opacity-35'} />
       </span>
 
       {/* Animated Sliding Thumb */}
       <span
-        className={`pointer-events-none inline-flex h-7 w-7 transform items-center justify-center rounded-full bg-white dark:bg-[#1E222D] shadow-md transition-all duration-300 ease-in-out ${
-          isDark ? 'translate-x-7 text-blue-400' : 'translate-x-0 text-amber-500'
+        className={`pointer-events-none inline-flex h-[30px] w-[30px] transform items-center justify-center rounded-full bg-white dark:bg-[#1E222D] shadow-md transition-all duration-300 ease-in-out ${
+          isDark ? 'translate-x-[38px] text-indigo-400' : 'translate-x-0 text-amber-500'
         }`}
       >
         {isDark ? (
-          <Moon size={14} className="fill-blue-400/20" />
+          <Moon size={18} className="fill-indigo-400/25 stroke-[2.2]" />
         ) : (
-          <Sun size={14} className="fill-amber-500/20" />
+          <Sun size={18} className="fill-amber-500/25 stroke-[2.2]" />
         )}
       </span>
     </button>
@@ -472,19 +472,22 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
       {/* 55% Left Scenery (Desktop) */}
       <div className="hidden lg:flex lg:w-[55%] relative flex-col justify-between p-12 text-white overflow-hidden bg-[#0A192F]">
         <img
-          src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1600&q=80"
+          src="/PSU-view.jpg"
           alt="PSU Campus"
-          className="absolute inset-0 w-full h-full object-cover z-0 opacity-80"
+          className="absolute inset-0 w-full h-full object-cover z-0 opacity-85"
         />
-        <div className="absolute inset-0 z-10" style={{ background: 'linear-gradient(180deg, rgba(10, 25, 47, 0.45) 0%, rgba(6, 18, 38, 0.92) 100%)' }} />
+        <div className="absolute inset-0 z-10" style={{ background: 'linear-gradient(180deg, rgba(10, 25, 47, 0.4) 0%, rgba(6, 18, 38, 0.9) 100%)' }} />
 
-        <div className="relative z-20 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
-            <GraduationCap size={26} className="text-white" />
+        <div className="relative z-20 flex items-center gap-5">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 p-2.5 shadow-xl flex-shrink-0">
+            <img src="/PSU_Logo.png" alt="PSU Logo" className="w-full h-full object-contain drop-shadow-lg" />
           </div>
-          <div>
-            <div className="text-base font-bold tracking-wide">{t.universityName}</div>
-            <div className="text-xs opacity-80">PRINCE OF SONGKLA UNIVERSITY • {t.campusHatyai.toUpperCase()}</div>
+          <div className="flex items-center">
+            <img
+              src="/PSU-brand.png"
+              alt="PSU Brand"
+              className="h-36 sm:h-44 w-auto max-w-[340px] sm:max-w-[420px] object-contain object-left brightness-0 invert opacity-95 drop-shadow-lg"
+            />
           </div>
         </div>
 
@@ -520,8 +523,8 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
 
         <div className="w-full max-w-md">
           <div className="text-center mb-6 sm:mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 inline-flex items-center justify-center mb-3 shadow-sm">
-              <GraduationCap size={36} />
+            <div className="h-16 sm:h-20 max-w-[220px] inline-flex items-center justify-center mb-3">
+              <img src="/PSU-Logo-usual.png" alt="PSU Logo" className="w-full h-full object-contain dark:brightness-0 dark:invert drop-shadow-sm" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{t.loginTitle}</h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-[#A8B4C7] mt-1.5">{t.loginSubtitle}</p>
@@ -1564,13 +1567,7 @@ export default function App() {
               <HelpCircle size={17} />
             </button>
 
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-full border border-slate-200 dark:border-[#2C2E33] bg-transparent text-slate-800 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#2A3038]"
-              title={theme === 'dark' ? t.toggleThemeLight : t.toggleThemeDark}
-            >
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
+            <ThemeSwitch theme={theme} toggleTheme={toggleTheme} lang={lang} />
           </div>
         </header>
 

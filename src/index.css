@@ -7,11 +7,17 @@
     box-sizing: border-box;
   }
   
+  html {
+    font-size: 18px; /* Boost system-wide font size for superior readability */
+  }
+
   html, body {
     margin: 0;
     padding: 0;
     min-height: 100%;
     font-family: 'Sarabun', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   #root {
@@ -19,5 +25,93 @@
     display: flex;
     flex-direction: column;
   }
+}
+
+/* Driver.js Custom Styling for PSU Theme */
+.driver-popover {
+  font-family: 'Sarabun', system-ui, sans-serif !important;
+  border-radius: 1rem !important;
+  padding: 1.25rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(37, 99, 235, 0.25) !important;
+}
+
+.driver-popover-title {
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.driver-popover-description {
+  font-size: 0.9375rem !important;
+  line-height: 1.6 !important;
+  color: #475569 !important;
+  margin-bottom: 1rem !important;
+}
+
+.driver-popover-progress-text {
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+}
+
+.driver-popover-next-btn, .driver-popover-done-btn {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 0.5rem 1.15rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.driver-popover-next-btn:hover, .driver-popover-done-btn:hover {
+  background-color: #1d4ed8 !important;
+}
+
+.driver-popover-prev-btn {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 0.75rem !important;
+  padding: 0.5rem 1.15rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+  cursor: pointer !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background-color: #e2e8f0 !important;
+}
+
+.driver-popover-close-btn {
+  color: #94a3b8 !important;
+  cursor: pointer !important;
+}
+
+/* Dark mode Driver.js */
+html.dark .driver-popover, [data-theme="dark"] .driver-popover {
+  background-color: #1e222d !important;
+  border: 1px solid #334155 !important;
+  color: #ffffff !important;
+}
+
+html.dark .driver-popover-title, [data-theme="dark"] .driver-popover-title {
+  color: #ffffff !important;
+}
+
+html.dark .driver-popover-description, [data-theme="dark"] .driver-popover-description {
+  color: #cbd5e1 !important;
+}
+
+html.dark .driver-popover-prev-btn, [data-theme="dark"] .driver-popover-prev-btn {
+  background-color: #2a3038 !important;
+  border-color: #3f4756 !important;
+  color: #cbd5e1 !important;
 }
 

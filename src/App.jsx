@@ -26,7 +26,8 @@ import {
   Eye,
   PanelLeft,
   Menu,
-  LogOut
+  LogOut,
+  ArrowLeft
 } from 'lucide-react';
 
 const CATEGORY_THEME = {
@@ -332,7 +333,7 @@ const MOCK = {
     students: [
       { id: "6710110001", name: "นายสมชาย ใจดี", nameEn: "Mr. Somchai Jaidee", year: 3, creditsEarned: 99, creditsReq: 132, gpa: 3.24, status: "normal", statusText: "ปกติ", statusTextEn: "Normal", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
       { id: "6710110002", name: "นางสาวปิยะนุช แก้วมณี", nameEn: "Ms. Piyanuch Kaewmanee", year: 3, creditsEarned: 102, creditsReq: 132, gpa: 3.61, status: "normal", statusText: "ปกติ", statusTextEn: "Normal", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
-      { id: "6710110003", name: "นายธนกฤต รักษ์ทอง", nameEn: "Mr. Thanakrit Rakthong", year: 3, creditsEarned: 78, creditsReq: 132, gpa: 2.41, status: "warning", statusText: "เสี่ยง", statusTextEn: "Warning", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
+      { id: "6710110003", name: "นายธนกฤต รักษ์ทอง", nameEn: "Mr. Thanakrit Rakthong", year: 3, creditsEarned: 84, creditsReq: 132, gpa: 2.41, status: "warning", statusText: "เสี่ยง", statusTextEn: "Warning", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" },
       { id: "6610110024", name: "นายอนุชา บุญเรือง", nameEn: "Mr. Anucha Boonruang", year: 4, creditsEarned: 92, creditsReq: 132, gpa: 1.94, status: "danger", statusText: "ต้องติดตามด่วน", statusTextEn: "Critical", faculty: "คณะวิทยาศาสตร์", facultyEn: "Faculty of Science", curriculum: "วิทยาศาสตรบัณฑิต สาขาวิชาวิทยาการคอมพิวเตอร์", curriculumEn: "B.Sc. in Computer Science" }
     ],
     consultations: [
@@ -595,6 +596,90 @@ const LoginScreen = ({ onLogin, theme, toggleTheme, lang, toggleLang }) => {
       </div>
     </div>
   );
+};
+
+/**
+ * คำนวณและประเมินสถานะความก้าวหน้าทางการศึกษาตามเป้าหมายสะสมรายชั้นปี
+ * Year 1: 25%, Year 2: 50%, Year 3: 75%, Year 4: 100%
+ */
+const calculateStudentStatus = (student) => {
+  const totalReq = student.creditsReq || student.totalCreditsRequired || 132;
+  const earned = student.creditsEarned || 0;
+  const year = student.year || 1;
+
+  const expectedCredits = Math.round(totalReq * (year * 0.25));
+  const creditGap = Math.max(0, expectedCredits - earned);
+
+  let status;
+  if (year >= 4) {
+    if (creditGap <= 6) status = 'normal';
+    else if (creditGap <= 12) status = 'warning';
+    else status = 'danger';
+  } else {
+    if (creditGap <= 9) status = 'normal';
+    else if (creditGap <= 18) status = 'warning';
+    else status = 'danger';
+  }
+
+  const statusText = status === 'normal' ? 'สถานะปกติ' : status === 'warning' ? 'มีความเสี่ยง' : 'ต้องติดตามด่วน';
+  const statusTextEn = status === 'normal' ? 'On-track' : status === 'warning' ? 'Warning' : 'Critical';
+
+  const badgeStyle = status === 'normal'
+    ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40'
+    : status === 'warning'
+    ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40'
+    : 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200/60 dark:border-red-800/40';
+
+  const progressPercent = Math.min(100, Math.round((earned / expectedCredits) * 100));
+
+  let explanationTh;
+  let explanationEn;
+  if (creditGap === 0) {
+    explanationTh = `ผ่านเกณฑ์เป้าหมายสะสมชั้นปีที่ ${year} ครบถ้วน (สะสมได้ ${earned} จากเป้าหมาย ${expectedCredits} หน่วยกิต)`;
+    explanationEn = `Fully achieved Year ${year} benchmark (${earned} of ${expectedCredits} cr.)`;
+  } else if (status === 'warning') {
+    explanationTh = `ตามหลังแผนการเรียน ${creditGap} หน่วยกิต (เป้าหมายชั้นปีที่ ${year} คือ ${expectedCredits} หน่วยกิต สะสมได้จริง ${earned} หน่วยกิต) แนะนำให้ลงทะเบียนเสริมในภาคการศึกษาถัดไป`;
+    explanationEn = `${creditGap} credits behind Year ${year} benchmark (Target: ${expectedCredits} cr., Actual: ${earned} cr.). Recommended to enroll in additional courses next term.`;
+  } else {
+    explanationTh = `ตามหลังแผนการเรียน ${creditGap} หน่วยกิต (เป้าหมายชั้นปีที่ ${year} คือ ${expectedCredits} หน่วยกิต สะสมได้จริง ${earned} หน่วยกิต) ขาดเกินเกณฑ์ที่กำหนด จำเป็นต้องเข้าพบอาจารย์ที่ปรึกษาเพื่อวางแผนการเรียนทันที`;
+    explanationEn = `${creditGap} credits behind Year ${year} benchmark (Target: ${expectedCredits} cr., Actual: ${earned} cr.). Exceeds allowed gap. Urgent academic consultation required.`;
+  }
+
+  return {
+    status,
+    statusText,
+    statusTextEn,
+    expectedCredits,
+    earnedCredits: earned,
+    creditGap,
+    year,
+    badgeStyle,
+    progressPercent,
+    explanationTh,
+    explanationEn
+  };
+};
+
+const getYearMilestones = (student) => {
+  const totalReq = student.creditsReq || student.totalCreditsRequired || 132;
+  const earned = student.creditsEarned || 0;
+  const currentYear = student.year || 1;
+
+  return [1, 2, 3, 4].map(yr => {
+    const target = Math.round(totalReq * (yr * 0.25));
+    const isCurrent = yr === currentYear;
+    const isPast = yr < currentYear;
+    const isPassedTarget = earned >= target;
+
+    return {
+      year: yr,
+      targetCredits: target,
+      isCurrent,
+      isPast,
+      isPassedTarget,
+      gap: Math.max(0, target - earned)
+    };
+  });
 };
 
 const DonutProgressChart = ({ studentData, lang = 'th', hoveredSegment, setHoveredSegment }) => {
@@ -1791,38 +1876,48 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {MOCK.advisor.students.map(s => (
-                      <tr key={s.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
-                        <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? s.name : s.nameEn}</td>
-                        <td className="p-3 tabular-nums text-slate-500 dark:text-[#A8B4C7]">{s.id}</td>
-                        <td className="p-3">{t.year} {s.year}</td>
-                        <td className="p-3 tabular-nums">{s.creditsEarned}/{s.creditsReq}</td>
-                        <td className="p-3 tabular-nums font-semibold">{s.gpa.toFixed(2)}</td>
-                        <td className="p-3">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            s.status === 'normal'
-                              ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400'
-                              : s.status === 'warning'
-                              ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400'
-                              : 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400'
-                          }`}>
-                            {lang === 'th' ? s.statusText : s.statusTextEn}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <button
-                            onClick={() => {
-                              setSelectedStudentId(s.id);
-                              setCurrentRoute('/advisor/student-detail');
-                            }}
-                            className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold hover:bg-slate-100 dark:hover:bg-[#2A3038] flex items-center gap-1"
-                          >
-                            <Eye size={14} />
-                            <span>{t.viewDetail}</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {MOCK.advisor.students.map(s => {
+                      const evalStatus = calculateStudentStatus(s, lang);
+                      return (
+                        <tr key={s.id} className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736]">
+                          <td className="p-3 font-semibold text-slate-800 dark:text-white">{lang === 'th' ? s.name : s.nameEn}</td>
+                          <td className="p-3 tabular-nums text-slate-500 dark:text-[#A8B4C7]">{s.id}</td>
+                          <td className="p-3">{t.year} {s.year}</td>
+                          <td className="p-3 tabular-nums font-semibold text-slate-800 dark:text-slate-200">{s.creditsEarned}/{s.creditsReq}</td>
+                          <td className="p-3 tabular-nums font-semibold">{s.gpa.toFixed(2)}</td>
+                          <td className="p-3">
+                            <div className="flex flex-col items-start gap-1">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${evalStatus.badgeStyle}`}>
+                                {lang === 'th' ? evalStatus.statusText : evalStatus.statusTextEn}
+                              </span>
+                              <div className="text-[11px] tabular-nums">
+                                {evalStatus.creditGap === 0 ? (
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                                    ✓ {lang === 'th' ? `ตามแผน (เป้า ${evalStatus.expectedCredits} นก.)` : `On-track (Target ${evalStatus.expectedCredits} cr.)`}
+                                  </span>
+                                ) : (
+                                  <span className={evalStatus.status === 'danger' ? 'text-red-500 dark:text-red-400 font-medium' : 'text-amber-500 dark:text-amber-400 font-medium'}>
+                                    {lang === 'th' ? `ขาดอีก ${evalStatus.creditGap} นก. (เป้า ${evalStatus.expectedCredits})` : `-${evalStatus.creditGap} cr. (Target ${evalStatus.expectedCredits})`}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <button
+                              onClick={() => {
+                                setSelectedStudentId(s.id);
+                                setCurrentRoute('/advisor/student-detail');
+                              }}
+                              className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold hover:bg-slate-100 dark:hover:bg-[#2A3038] flex items-center gap-1 active:scale-95 transition-transform"
+                            >
+                              <Eye size={14} />
+                              <span>{t.viewDetail}</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1830,106 +1925,283 @@ export default function App() {
           )}
 
           {/* VIEW: Advisor Student Detail (Identical Layout to Student Dashboard) */}
-          {currentRoute === '/advisor/student-detail' && (
-            <div className="flex flex-col gap-5">
-              <div className="flex justify-between items-center flex-wrap gap-2">
-                <button
-                  onClick={() => setCurrentRoute('/advisor/students')}
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-[#2C2E33] text-xs font-semibold bg-white dark:bg-[#191C24]"
-                >
-                  {t.backToAdviseesList}
-                </button>
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                  {lang === 'th' ? activeStudentData.name : activeStudentData.nameEn} ({activeStudentData.id})
-                </span>
-              </div>
+          {currentRoute === '/advisor/student-detail' && (() => {
+            const evalStatus = calculateStudentStatus(activeStudentData, lang);
+            const milestones = getYearMilestones(activeStudentData);
 
-              {/* Read-Only Notice Banner */}
-              <div className="p-3 rounded-xl border-l-4 border-red-500 bg-red-50 dark:bg-[#29181C] text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                <AlertCircle size={18} className="text-red-500 flex-shrink-0" />
-                <span>{t.readOnlyAdviseeBanner}</span>
-              </div>
-
-              {/* Donut Chart & Category Progress Summary */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col items-center justify-between">
-                  <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white self-start">
-                    {t.overallProgress}
-                  </h3>
-
-                  <DonutProgressChart
-                    studentData={activeStudentData}
-                    lang={lang}
-                    hoveredSegment={hoveredSegment}
-                    setHoveredSegment={setHoveredSegment}
-                  />
-
-                  <div className="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/40 p-3 rounded-xl text-xs text-slate-700 dark:text-slate-300 text-left">
-                    {activeStudentData.creditsRemaining > 0
-                      ? (lang === 'th' ? `คงเหลืออีก ${activeStudentData.creditsRemaining} หน่วยกิต เพื่อสำเร็จการศึกษาตามแผน` : `${activeStudentData.creditsRemaining} credits remaining to graduate.`)
-                      : (lang === 'th' ? 'ผ่านครบตามเกณฑ์หลักสูตรแล้ว' : 'Curriculum requirements fulfilled.')}
+            return (
+              <div className="flex flex-col gap-5 sm:gap-6">
+                {/* Navigation Bar */}
+                <div className="flex justify-between items-center flex-wrap gap-2.5">
+                  <button
+                    onClick={() => setCurrentRoute('/advisor/students')}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#2C2E33] text-xs sm:text-sm font-bold bg-white dark:bg-[#191C24] hover:bg-slate-50 dark:hover:bg-[#2A3038] text-slate-700 dark:text-slate-200 flex items-center gap-2 transition-all shadow-sm active:scale-95"
+                  >
+                    <ArrowLeft size={16} />
+                    <span>{t.backToAdviseesList}</span>
+                  </button>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40">
+                      <AlertCircle size={14} />
+                      {lang === 'th' ? 'โหมดตรวจสอบผลการเรียน' : 'Audit Mode'}
+                    </span>
+                    <button
+                      onClick={() => setIsPdfOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-all active:scale-95"
+                    >
+                      <Download size={15} />
+                      <span>{t.exportPdfBtn}</span>
+                    </button>
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
-                  <CategoryProgressList
-                    studentData={activeStudentData}
-                    lang={lang}
-                  />
-                </div>
-              </div>
-
-              {/* Consultation Notes */}
-              <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-3">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <ScrollText size={18} className="text-blue-600 dark:text-blue-400" />
-                  {t.consultationNotesTitle}
-                </h3>
-
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="text"
-                    placeholder={t.consultationPlaceholder}
-                    value={newConsultationText}
-                    onChange={(e) => setNewConsultationText(e.target.value)}
-                    className="flex-1 py-2 px-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
-                  />
-                  <button
-                    onClick={() => {
-                      if (!newConsultationText.trim()) return;
-                      const entry = {
-                        id: Date.now(),
-                        studentId: activeStudentData.id,
-                        date: "2 ก.ย. 2569",
-                        dateEn: "2 Sep 2026",
-                        author: MOCK.advisor.name,
-                        authorEn: MOCK.advisor.nameEn,
-                        note: newConsultationText.trim(),
-                        noteEn: newConsultationText.trim()
-                      };
-                      setAdvisorConsultations([entry, ...advisorConsultations]);
-                      setNewConsultationText('');
-                    }}
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
-                  >
-                    {t.addConsultationBtn}
-                  </button>
-                </div>
-
-                <div className="flex flex-col gap-2 mt-2">
-                  {advisorConsultations.filter(c => c.studentId === activeStudentData.id).map(c => (
-                    <div key={c.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] text-xs">
-                      <div className="flex justify-between items-center text-slate-500 dark:text-[#A8B4C7] mb-1">
-                        <span className="font-semibold text-slate-800 dark:text-white">{lang === 'th' ? c.author : c.authorEn}</span>
-                        <span className="tabular-nums">{lang === 'th' ? c.date : c.dateEn}</span>
-                      </div>
-                      <div className="text-slate-800 dark:text-slate-200">{lang === 'th' ? c.note : c.noteEn}</div>
+                {/* Student Profile Header Card */}
+                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl flex-shrink-0 ${
+                      evalStatus.status === 'danger'
+                        ? 'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-800/40'
+                        : evalStatus.status === 'warning'
+                        ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40'
+                        : 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40'
+                    }`}>
+                      {lang === 'th'
+                        ? (activeStudentData.name ? activeStudentData.name.replace(/^(นาย|นางสาว|นาง)\s*/, '').slice(0, 2) : 'นศ')
+                        : (activeStudentData.nameEn ? activeStudentData.nameEn.replace(/^(Mr\.|Ms\.|Mrs\.)\s*/, '').slice(0, 2).toUpperCase() : 'ST')}
                     </div>
-                  ))}
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                          {lang === 'th' ? activeStudentData.name : activeStudentData.nameEn}
+                        </h2>
+                        <span className="tabular-nums font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#2A3038] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#2C2E33]">
+                          {activeStudentData.id}
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                          {t.year} {activeStudentData.year}
+                        </span>
+                        <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${evalStatus.badgeStyle}`}>
+                          {lang === 'th' ? evalStatus.statusText : evalStatus.statusTextEn}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-[#A8B4C7] mt-0.5">
+                        {lang === 'th' ? activeStudentData.curriculum : activeStudentData.curriculumEn} • {lang === 'th' ? activeStudentData.faculty : activeStudentData.facultyEn}
+                      </p>
+                      <div className="text-xs text-slate-700 dark:text-slate-300 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                        <span>{t.gpa}: <strong className="tabular-nums text-blue-600 dark:text-blue-400 text-sm font-extrabold">{activeStudentData.gpa.toFixed(2)}</strong></span>
+                        <span>{t.advisor}: <strong>{lang === 'th' ? activeStudentData.advisor : activeStudentData.advisorEn}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Credits Counter Pill */}
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-[#2C2E33] gap-1">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                      {lang === 'th' ? 'หน่วยกิตสะสม' : 'Earned Credits'}
+                    </span>
+                    <div className="tabular-nums text-base sm:text-lg font-extrabold text-blue-600 dark:text-blue-400">
+                      {activeStudentData.creditsEarned} <span className="text-xs font-medium text-slate-400">/ {activeStudentData.totalCreditsRequired}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Academic Progression & Benchmark Audit Card */}
+                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 dark:border-[#2C2E33] pb-3">
+                    <div>
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <GraduationCap size={18} className="text-blue-600 dark:text-blue-400" />
+                        {lang === 'th' ? 'การประเมินสถานะตามเกณฑ์หน่วยกิตสะสมรายชั้นปี' : 'Year-Level Cumulative Credit Benchmark Audit'}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mt-0.5">
+                        {lang === 'th'
+                          ? `ประเมินเทียบกับเป้าหมายตามแผนการเรียนของหลักสูตร (${activeStudentData.totalCreditsRequired} หน่วยกิต)`
+                          : `Evaluated against study plan benchmark (${activeStudentData.totalCreditsRequired} Total Credits)`}
+                      </p>
+                    </div>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${evalStatus.badgeStyle}`}>
+                      {lang === 'th' ? `สถานะ: ${evalStatus.statusText}` : `Status: ${evalStatus.statusTextEn}`}
+                    </span>
+                  </div>
+
+                  {/* 4-Year Milestone Stepper Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    {milestones.map(ms => {
+                      const isCurrentYear = ms.isCurrent;
+                      const isTargetMet = ms.isPassedTarget;
+                      return (
+                        <div
+                          key={ms.year}
+                          className={`p-4 rounded-xl border flex flex-col justify-between gap-3 transition-all ${
+                            isCurrentYear
+                              ? 'bg-blue-50/70 dark:bg-blue-950/30 border-blue-400 dark:border-blue-500 ring-2 ring-blue-500/20 shadow-sm'
+                              : ms.isPast
+                              ? 'bg-slate-50 dark:bg-[#2A3038] border-slate-200 dark:border-[#2C2E33]'
+                              : 'bg-slate-50/50 dark:bg-[#222736] border-slate-200/60 dark:border-[#2C2E33]/60 opacity-80'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-slate-800 dark:text-white">
+                                {lang === 'th' ? `ชั้นปีที่ ${ms.year}` : `Year ${ms.year}`}
+                              </span>
+                              {isCurrentYear && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white shadow-xs">
+                                  {lang === 'th' ? 'ชั้นปีปัจจุบัน' : 'Current'}
+                                </span>
+                              )}
+                            </div>
+                            {isTargetMet ? (
+                              <span className="p-1 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+                                <Check size={13} strokeWidth={3} />
+                              </span>
+                            ) : isCurrentYear ? (
+                              <span className="p-1 rounded-full bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                                <AlertCircle size={13} />
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <div>
+                            <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7]">
+                              {lang === 'th' ? 'เป้าหมายสะสม' : 'Expected Benchmark'}
+                            </div>
+                            <div className="text-lg font-extrabold text-slate-900 dark:text-white tabular-nums mt-0.5">
+                              {ms.targetCredits} <span className="text-xs font-semibold text-slate-500">{lang === 'th' ? 'หน่วยกิต' : 'cr.'}</span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between items-center text-[11px] mb-1 font-semibold">
+                              <span className="text-slate-500 dark:text-[#A8B4C7]">{lang === 'th' ? 'สะสมจริง' : 'Actual Earned'}</span>
+                              <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
+                                {Math.min(activeStudentData.creditsEarned, ms.targetCredits)} / {ms.targetCredits}
+                              </span>
+                            </div>
+                            <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div
+                                style={{
+                                  width: `${Math.min(100, Math.round((activeStudentData.creditsEarned / ms.targetCredits) * 100))}%`,
+                                  backgroundColor: isTargetMet ? '#16A34A' : isCurrentYear ? (evalStatus.status === 'danger' ? '#EF4444' : '#F59E0B') : '#2563EB'
+                                }}
+                                className="h-full rounded-full transition-all duration-300"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Evaluation Insight Callout Box */}
+                  <div className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs ${
+                    evalStatus.status === 'normal'
+                      ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-300'
+                      : evalStatus.status === 'warning'
+                      ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-300'
+                      : 'bg-red-50/70 dark:bg-red-950/20 border-red-200 dark:border-red-800/40 text-red-900 dark:text-red-300'
+                  }`}>
+                    <div className="flex items-start gap-2.5">
+                      <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-sm">
+                          {lang === 'th'
+                            ? `ผลการประเมิน: ${evalStatus.statusText}`
+                            : `Audit Result: ${evalStatus.statusTextEn}`}
+                        </div>
+                        <p className="mt-0.5 text-xs opacity-90">
+                          {lang === 'th' ? evalStatus.explanationTh : evalStatus.explanationEn}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0 self-end sm:self-center font-semibold">
+                      {lang === 'th' ? 'ความคืบหน้าเทียบเป้าหมายปีนี้:' : 'Progress to Year Benchmark:'}{' '}
+                      <strong className="tabular-nums text-sm font-extrabold">{evalStatus.progressPercent}%</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Donut Chart & Category Progress Summary */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col items-center justify-between">
+                    <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white self-start">
+                      {t.overallProgress}
+                    </h3>
+
+                    <DonutProgressChart
+                      studentData={activeStudentData}
+                      lang={lang}
+                      hoveredSegment={hoveredSegment}
+                      setHoveredSegment={setHoveredSegment}
+                    />
+
+                    <div className="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/40 p-3 rounded-xl text-xs text-slate-700 dark:text-slate-300 text-left">
+                      {activeStudentData.creditsRemaining > 0
+                        ? (lang === 'th' ? `คงเหลืออีก ${activeStudentData.creditsRemaining} หน่วยกิต เพื่อสำเร็จการศึกษาตามแผน` : `${activeStudentData.creditsRemaining} credits remaining to graduate.`)
+                        : (lang === 'th' ? 'ผ่านครบตามเกณฑ์หลักสูตรแล้ว' : 'Curriculum requirements fulfilled.')}
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm lg:col-span-6 flex flex-col justify-between">
+                    <CategoryProgressList
+                      studentData={activeStudentData}
+                      lang={lang}
+                    />
+                  </div>
+                </div>
+
+                {/* Consultation Notes */}
+                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <ScrollText size={18} className="text-blue-600 dark:text-blue-400" />
+                    {t.consultationNotesTitle}
+                  </h3>
+
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      placeholder={t.consultationPlaceholder}
+                      value={newConsultationText}
+                      onChange={(e) => setNewConsultationText(e.target.value)}
+                      className="flex-1 py-2 px-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!newConsultationText.trim()) return;
+                        const entry = {
+                          id: Date.now(),
+                          studentId: activeStudentData.id,
+                          date: "2 ก.ย. 2569",
+                          dateEn: "2 Sep 2026",
+                          author: MOCK.advisor.name,
+                          authorEn: MOCK.advisor.nameEn,
+                          note: newConsultationText.trim(),
+                          noteEn: newConsultationText.trim()
+                        };
+                        setAdvisorConsultations([entry, ...advisorConsultations]);
+                        setNewConsultationText('');
+                      }}
+                      className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold active:scale-95 transition-transform"
+                    >
+                      {t.addConsultationBtn}
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-2 mt-2">
+                    {advisorConsultations.filter(c => c.studentId === activeStudentData.id).map(c => (
+                      <div key={c.id} className="p-3 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] text-xs">
+                        <div className="flex justify-between items-center text-slate-500 dark:text-[#A8B4C7] mb-1">
+                          <span className="font-semibold text-slate-800 dark:text-white">{lang === 'th' ? c.author : c.authorEn}</span>
+                          <span className="tabular-nums">{lang === 'th' ? c.date : c.dateEn}</span>
+                        </div>
+                        <div className="text-slate-800 dark:text-slate-200">{lang === 'th' ? c.note : c.noteEn}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* VIEW: Advisor Department Overview */}
           {currentRoute === '/advisor/department' && (

@@ -1217,10 +1217,11 @@ export default function App() {
   const [hoveredSegment, setHoveredSegment] = useState(null);
   const [statsPeriod, setStatsPeriod] = useState('daily');
 
-  // History filters
+  // History filters & Pagination (20 per page)
   const [historyTermFilter, setHistoryTermFilter] = useState('all');
   const [historyYearFilter, setHistoryYearFilter] = useState('all');
   const [historySearchQuery, setHistorySearchQuery] = useState('');
+  const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
 
   // Selected student and admin user inspection
   const [selectedStudentId, setSelectedStudentId] = useState('6710110001');
@@ -2279,7 +2280,10 @@ export default function App() {
                         type="text"
                         placeholder={t.searchPlaceholder}
                         value={historySearchQuery}
-                        onChange={(e) => setHistorySearchQuery(e.target.value)}
+                        onChange={(e) => {
+                          setHistorySearchQuery(e.target.value);
+                          setHistoryCurrentPage(1);
+                        }}
                         className="w-full py-2 pl-8 pr-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
                       />
                       <Search size={14} className="absolute left-2.5 top-2.5 text-slate-400" />
@@ -2287,7 +2291,11 @@ export default function App() {
 
                     <select
                       value={historyYearFilter}
-                      onChange={(e) => { setHistoryYearFilter(e.target.value); setHistoryTermFilter('all'); }}
+                      onChange={(e) => {
+                        setHistoryYearFilter(e.target.value);
+                        setHistoryTermFilter('all');
+                        setHistoryCurrentPage(1);
+                      }}
                       className="w-full py-2 px-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
                     >
                       <option value="all">{t.filterAllYears}</option>
@@ -2298,7 +2306,10 @@ export default function App() {
 
                     <select
                       value={historyTermFilter}
-                      onChange={(e) => setHistoryTermFilter(e.target.value)}
+                      onChange={(e) => {
+                        setHistoryTermFilter(e.target.value);
+                        setHistoryCurrentPage(1);
+                      }}
                       className="w-full py-2 px-3 rounded-xl border border-slate-200 dark:border-[#2C2E33] bg-slate-50 dark:bg-[#2A3038] text-xs"
                     >
                       <option value="all">{t.filterAllTerms}</option>
@@ -2311,42 +2322,70 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl overflow-hidden shadow-sm">
-                  <div className="w-full overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
-                          <th className="p-3">{t.courseCode}</th>
-                          <th className="p-3">{t.courseName}</th>
-                          <th className="p-3">{t.credits}</th>
-                          <th className="p-3">{t.category}</th>
-                          <th className="p-3">{t.term}</th>
-                          <th className="p-3">{t.grade}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredHistoryCourses.map(c => (
-                          <tr
-                            key={c.code + c.term}
-                            onClick={() => handleOpenCourseDetail(c)}
-                            className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
-                          >
-                            <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
-                            <td className="p-3 text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
-                            <td className="p-3 tabular-nums">{c.credits}</td>
-                            <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
-                            <td className="p-3 tabular-nums font-semibold">{c.term}</td>
-                            <td className="p-3">
-                              <span className="font-bold text-slate-900 dark:text-white tabular-nums text-sm">
-                                {c.grade}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                {(() => {
+                  const pageSize = 20;
+                  const totalPages = Math.ceil(filteredHistoryCourses.length / pageSize) || 1;
+                  const validPage = Math.min(historyCurrentPage, totalPages);
+                  const pagedHistoryCourses = filteredHistoryCourses.slice((validPage - 1) * pageSize, validPage * pageSize);
+
+                  return (
+                    <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                      <div className="w-full overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-sm">
+                          <thead>
+                            <tr className="border-b border-slate-200 dark:border-[#2C2E33] text-xs font-semibold text-slate-500 dark:text-[#A8B4C7] bg-slate-50 dark:bg-[#2A3038]">
+                              <th className="p-3">{t.courseCode}</th>
+                              <th className="p-3">{t.courseName}</th>
+                              <th className="p-3">{t.credits}</th>
+                              <th className="p-3">{t.category}</th>
+                              <th className="p-3">{t.term}</th>
+                              <th className="p-3">{t.grade}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {pagedHistoryCourses.length === 0 ? (
+                              <tr>
+                                <td colSpan={6} className="p-8 text-center text-xs text-slate-500 dark:text-[#A8B4C7]">
+                                  {lang === 'th' ? 'ไม่พบข้อมูลรายวิชาที่ตรงกับเงื่อนไขการค้นหา' : 'No courses found matching your criteria.'}
+                                </td>
+                              </tr>
+                            ) : (
+                              pagedHistoryCourses.map(c => (
+                                <tr
+                                  key={c.code + c.term}
+                                  onClick={() => handleOpenCourseDetail(c)}
+                                  className="border-b border-slate-100 dark:border-[#2C2E33] hover:bg-slate-50 dark:hover:bg-[#222736] cursor-pointer transition-colors"
+                                >
+                                  <td className="p-3 font-semibold text-blue-600 dark:text-blue-400 tabular-nums">{c.code}</td>
+                                  <td className="p-3 text-slate-800 dark:text-white">{lang === 'th' ? c.nameTh : c.nameEn}</td>
+                                  <td className="p-3 tabular-nums">{c.credits}</td>
+                                  <td className="p-3"><CategoryBadge categoryId={c.category} lang={lang} /></td>
+                                  <td className="p-3 tabular-nums font-semibold">{c.term}</td>
+                                  <td className="p-3">
+                                    <span className="font-bold text-slate-900 dark:text-white tabular-nums text-sm">
+                                      {c.grade}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Pagination (20 items/page) */}
+                      <div className="p-4 pt-0">
+                        <PaginationControl
+                          currentPage={validPage}
+                          totalItems={filteredHistoryCourses.length}
+                          pageSize={pageSize}
+                          onPageChange={setHistoryCurrentPage}
+                          lang={lang}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })()}

@@ -1260,6 +1260,9 @@ export default function App() {
       return {
         name: lang === 'th' ? MOCK.advisor.name : MOCK.advisor.nameEn,
         subtitle: lang === 'th' ? 'อาจารย์ที่ปรึกษา' : 'Academic Advisor',
+        campus: 'วิทยาเขตหาดใหญ่',
+        campusEn: 'Hat Yai Campus',
+        campusTag: lang === 'th' ? 'วิทยาเขตหาดใหญ่' : 'Hat Yai Campus',
         roleBadge: t.roleAdvisor,
         initials: lang === 'th' ? 'วท' : 'WT',
         avatarBg: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40'
@@ -1271,6 +1274,7 @@ export default function App() {
         subtitle: 'somsak.admin@psu.ac.th',
         campus: 'วิทยาเขตหาดใหญ่',
         campusEn: 'Hat Yai Campus',
+        campusTag: lang === 'th' ? 'วิทยาเขตหาดใหญ่ (วิทยาเขตของคุณ)' : 'Hat Yai Campus (Your Campus)',
         roleBadge: t.roleAdmin,
         initials: lang === 'th' ? 'สอ' : 'SA',
         avatarBg: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40'
@@ -1279,6 +1283,8 @@ export default function App() {
     return {
       name: lang === 'th' ? MOCK.student.name : MOCK.student.nameEn,
       subtitle: MOCK.student.id,
+      campus: lang === 'th' ? MOCK.student.campus : MOCK.student.campusEn,
+      campusTag: lang === 'th' ? MOCK.student.campus : MOCK.student.campusEn,
       roleBadge: t.roleStudent,
       initials: lang === 'th' ? 'สช' : 'SJ',
       avatarBg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40'
@@ -1425,20 +1431,28 @@ export default function App() {
 
         <div className="p-3 border-t border-slate-200 dark:border-[#2C2E33]">
           {/* User Profile Card */}
-          <div className="p-3 mb-2 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${currentUserProfile.avatarBg}`}>
-              {currentUserProfile.initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-1">
-                <span className="text-xs font-bold text-slate-800 dark:text-white truncate">
+          <div className="p-3 mb-2 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${currentUserProfile.avatarBg}`}>
+                {currentUserProfile.initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-slate-800 dark:text-white truncate">
                   {currentUserProfile.name}
-                </span>
-              </div>
-              <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] truncate">
-                {currentUserProfile.subtitle}
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] truncate">
+                  {currentUserProfile.subtitle}
+                </div>
               </div>
             </div>
+
+            {/* Campus Badge */}
+            {currentUserProfile.campusTag && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40 text-[11px] font-semibold">
+                <Building2 size={13} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <span className="truncate">{currentUserProfile.campusTag}</span>
+              </div>
+            )}
           </div>
 
           <button
@@ -1500,21 +1514,31 @@ export default function App() {
         <div className="p-3 border-t border-slate-200 dark:border-[#2C2E33]">
           {/* User Profile Card */}
           {!isCollapsed ? (
-            <div className="p-2.5 mb-2.5 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${currentUserProfile.avatarBg}`}>
-                {currentUserProfile.initials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-slate-800 dark:text-white truncate">
-                  {currentUserProfile.name}
+            <div className="p-2.5 mb-2.5 rounded-xl bg-slate-50 dark:bg-[#2A3038] border border-slate-200 dark:border-[#2C2E33] flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${currentUserProfile.avatarBg}`}>
+                  {currentUserProfile.initials}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] truncate">
-                  {currentUserProfile.subtitle}
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-slate-800 dark:text-white truncate">
+                    {currentUserProfile.name}
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-[#A8B4C7] truncate">
+                    {currentUserProfile.subtitle}
+                  </div>
                 </div>
               </div>
+
+              {/* Campus Badge */}
+              {currentUserProfile.campusTag && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40 text-[11px] font-semibold">
+                  <Building2 size={13} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                  <span className="truncate">{currentUserProfile.campusTag}</span>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="flex justify-center mb-2.5" title={`${currentUserProfile.name} (${currentUserProfile.subtitle})`}>
+            <div className="flex justify-center mb-2.5" title={`${currentUserProfile.name} (${currentUserProfile.subtitle}) • ${currentUserProfile.campusTag || ''}`}>
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${currentUserProfile.avatarBg}`}>
                 {currentUserProfile.initials}
               </div>
@@ -2647,23 +2671,15 @@ export default function App() {
 
             return (
               <div className="bg-white dark:bg-[#191C24] border border-slate-200 dark:border-[#2C2E33] rounded-2xl p-5 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                  <div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                      {lang === 'th' ? 'จัดการและตรวจสอบผู้ใช้งานระบบ' : 'User Accounts Directory'}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mt-0.5">
-                      {lang === 'th'
-                        ? 'แสดงเฉพาะผู้ใช้งานในวิทยาเขตของคุณตามสิทธิ์ผู้ดูแลระบบ'
-                        : 'Showing only users within your campus scope based on admin privileges'}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40 shadow-sm">
-                      <Building2 size={14} />
-                      <span>{lang === 'th' ? 'วิทยาเขตหาดใหญ่ (วิทยาเขตของคุณ)' : 'Hat Yai Campus (Your Campus)'}</span>
-                    </span>
-                  </div>
+                <div className="mb-4">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                    {lang === 'th' ? 'จัดการและตรวจสอบผู้ใช้งานระบบ' : 'User Accounts Directory'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-[#A8B4C7] mt-0.5">
+                    {lang === 'th'
+                      ? 'แสดงเฉพาะผู้ใช้งานในวิทยาเขตของคุณตามสิทธิ์ผู้ดูแลระบบ'
+                      : 'Showing only users within your campus scope based on admin privileges'}
+                  </p>
                 </div>
 
                 <div className="w-full overflow-x-auto">
